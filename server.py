@@ -6,8 +6,6 @@ from PIL import Image
 from flask_ngrok import run_with_ngrok
 from sd import SD, download_models
 
-
-
 app = Flask(__name__)
 job_queue = queue.Queue()
 job_status = {}
@@ -75,9 +73,9 @@ def worker():
 		if job is None:
 			break
 		job_id = job["job_id"]
-		job_status[job_id] = "processing"
+		job_status[job_id]['status'] = "processing"
 		process_job(job)
-		job_status[job_id] = "completed"
+		job_status[job_id]['status'] = "completed"
 
 # Start the worker thread
 worker_thread = Thread(target=worker)
@@ -104,7 +102,7 @@ def get_job_status():
 def delete_job():
 	job_id = request.args.get('jobid')
 	if job_id and job_id in job_status:
-		job_status[job_id] = 'deleted'
+		job_status[job_id]['status'] = 'deleted'
 		return jsonify({"result": "Job deleted"})
 	else:
 		return jsonify({"error": "Job not found"}), 404
@@ -131,7 +129,7 @@ def create_task(task):
 		}
 
 		job_queue.put(job)
-		job_status[job_id] = job["status"]
+		job_status[job_id] = job
 
 		return jsonify({"job_id": job_id, "status": "queued"})
 	else:
