@@ -4,7 +4,7 @@ from threading import Thread
 from flask import Flask, request, jsonify
 from PIL import Image
 from flask_ngrok import run_with_ngrok
-from .sd import SD, download_models
+from sd import SD, download_models
 
 
 
