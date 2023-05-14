@@ -1,13 +1,30 @@
-import base64
-import os
-import uuid
+import os, uuid, base64, argparse, subprocess , queue
 from io import BytesIO
 from threading import Thread
 from flask import Flask, request, jsonify
 from PIL import Image
-import queue
+from flask_ngrok import run_with_ngrok
 
 app = Flask(__name__)
+job_queue = queue.Queue()
+job_status = {}
+available_models = ['model1', 'model2', 'model3']
+
+# Add command line arguments to enable Ngrok and apply a token
+parser = argparse.ArgumentParser(description="Run Flask app with optional Ngrok and token.")
+parser.add_argument("--ngrok", action="store_true", help="Enable Ngrok reverse tunneling")
+parser.add_argument("--token", type=str, help="Use Ngrok auth token")
+
+args = parser.parse_args()
+  
+if args.ngrok:
+	if args.token:
+		subprocess.check_call(["ngrok", "authtoken", args.token])
+		run_with_ngrok(app)
+	else:
+		run_with_ngrok(app)
+
+# Remainder of the code is the same as before...
 
 # Job queue
 job_queue = queue.Queue()
@@ -137,5 +154,5 @@ def process_job(job):
 
 
 if __name__ == '__main__':
-	app.run(host='0.0.0.0', port=5000)
+	app.run(host='0.0.0.0', port=5000, threaded=True)
  
