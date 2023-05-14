@@ -24,6 +24,7 @@ from huggingface_hub import snapshot_download
 class SD:
     def __init__(self, models_path, model_id, controlnet_model_id, torch_dtype=torch.float16, mo=True):
         self.torch_dtype = torch_dtype
+        self.mo = mo
         model_path = os.path.join(models_path,model_id)
         if controlnet_model_id:
           controlnet_model_path  = os.path.join(models_path,controlnet_model_id)
@@ -78,14 +79,14 @@ class SD:
             self.depth_estimator = pipeline("depth-estimation")
 
             #x
-            if mo:
+            if self.mo:
               self.controlnet.enable_model_cpu_offload()
               self.controlnet.enable_xformers_memory_efficient_attention()
         else:
             self.controlnet = None
         
         ######
-        if mo:
+        if self.mo:
           self.txt2img.enable_xformers_memory_efficient_attention()
           self.txt2img.enable_model_cpu_offload()
           
