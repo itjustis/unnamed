@@ -152,10 +152,10 @@ def process_job(job):
 
 
 if __name__ == '__main__':
-  	app.debug = False
-  	if app_args.ngrok:
+	app.debug = False
+	if app_args.ngrok:
 		print('running with ngrok')
 		run_with_ngrok(app)
 		app.run()
-  	else:
+	else:
 		app.run(host='0.0.0.0', port=5000)
