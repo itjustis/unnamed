@@ -4,16 +4,20 @@ from threading import Thread
 from flask import Flask, request, jsonify
 from PIL import Image
 from flask_ngrok import run_with_ngrok
+from unnamed.sd import SD, download_models
+
+
 
 app = Flask(__name__)
 job_queue = queue.Queue()
 job_status = {}
-available_models = ['model1', 'model2', 'model3']
 
 # Add command line arguments to enable Ngrok and apply a token
 parser = argparse.ArgumentParser(description="Run Flask app with optional Ngrok and token.")
 parser.add_argument("--ngrok", action="store_true", help="Enable Ngrok reverse tunneling")
 parser.add_argument("--token", type=str, help="Use Ngrok auth token")
+parser.add_argument("--models_path", type=str, default='/content/models/', help="Path to models directory")
+args = parser.parse_args()
 
 app_args = parser.parse_args()
   
@@ -24,6 +28,29 @@ if app_args.ngrok:
 	else:
 		run_with_ngrok(app)
 
+# init
+models_path = args.models_path # set model path variable
+temp_folder = 'temp'
+if not os.path.exists(models_path):
+	os.makedirs(models_path)
+if not os.path.exists(temp_folder):
+	os.makedirs(temp_folder)
+
+available_models = [
+	'CompVis/stable-diffusion-v1-4',
+	'runwayml/stable-diffusion-v1-5',
+	'dreamlike-art/dreamlike-photoreal-2.0',
+	#''
+	]
+
+def init(models):
+	download_models(models,models_path)
+	sd = SD( models_path, models[0], None)
+	return sd
+	
+sd = init(available_models)
+
+
 # Job queue
 job_queue = queue.Queue()
 
@@ -32,6 +59,7 @@ job_status = {}
 
 # Available models list
 available_models = ['model1', 'model2', 'model3']
+
 
 # Helper function to save image from base64
 def save_image_from_b64(b64_string, folder, filename):
@@ -85,10 +113,13 @@ def delete_job():
 def create_task(task):
 	if task in ['imagine', 'overpaint', 'inpaint', 'controlnet']:
 		args = request.get_json()
-		b64_string = args['source_image']
-		temp_folder = 'temp'
-		filename = f"{uuid.uuid4()}.png"
-		img_path = save_image_from_b64(b64_string, temp_folder, filename)
+		
+		if (task!='imagine'):
+			b64_string = args['source_image']
+			filename = f"{uuid.uuid4()}.png"
+			img_path = save_image_from_b64(b64_string, temp_folder, filename)
+		else:
+			img_path = None
 
 		job_id = str(uuid.uuid4())
 		job = {
@@ -112,23 +143,19 @@ def image_to_base64(img):
 	img.save(buffered, format="PNG")
 	return base64.b64encode(buffered.getvalue()).decode("utf-8")
 
-# Task functions
+# SD functions
 def imagine(args):
-	# TODO: Implement the 'imagine' function
-	pass
+	return sd.txt2img('skeleton knight in a vast lymnal space abandoned empty huge backrooms by moebius and kim dorland')[0][0]
 
 def overpaint(args):
-	# TODO: Implement the 'overpaint' function
-	pass
-
+	return sd.txt2img('skeleton knight in a vast lymnal space abandoned empty huge backrooms by moebius and kim dorland')[0][0]
+	
 def inpaint(args):
-	# TODO: Implement the 'inpaint' function
-	pass
-
+	return sd.txt2img('skeleton knight in a vast lymnal space abandoned empty huge backrooms by moebius and kim dorland')[0][0]
+	
 def controlnet(args):
-	# TODO: Implement the 'controlnet' function
-	pass
-
+	return sd.txt2img('skeleton knight in a vast lymnal space abandoned empty huge backrooms by moebius and kim dorland')[0][0]
+	
 # Function to process jobs
 def process_job(job):
 	task = job['task']
