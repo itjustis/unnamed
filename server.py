@@ -15,16 +15,14 @@ parser = argparse.ArgumentParser(description="Run Flask app with optional Ngrok 
 parser.add_argument("--ngrok", action="store_true", help="Enable Ngrok reverse tunneling")
 parser.add_argument("--token", type=str, help="Use Ngrok auth token")
 
-args = parser.parse_args()
+app_args = parser.parse_args()
   
-if args.ngrok:
-	if args.token:
-		subprocess.check_call(["ngrok", "authtoken", args.token])
+if app_args.ngrok:
+	if app_args.token:
+		subprocess.check_call(["ngrok", "authtoken", app_args.token])
 		run_with_ngrok(app)
 	else:
 		run_with_ngrok(app)
-
-# Remainder of the code is the same as before...
 
 # Job queue
 job_queue = queue.Queue()
@@ -154,5 +152,10 @@ def process_job(job):
 
 
 if __name__ == '__main__':
-	app.run(port=5000, threaded=True)
- 
+  	app.debug = False
+  	if app_args.ngrok:
+		print('running with ngrok')
+		run_with_ngrok(app)
+		app.run()
+  	else:
+		app.run(host='0.0.0.0', port=5000)
