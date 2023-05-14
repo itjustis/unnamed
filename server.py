@@ -4,7 +4,7 @@ from threading import Thread
 from flask import Flask, request, jsonify
 from PIL import Image
 from flask_ngrok import run_with_ngrok
-from unnamed.sd import SD, download_models
+from .sd import SD, download_models
 
 
 
@@ -17,7 +17,7 @@ parser = argparse.ArgumentParser(description="Run Flask app with optional Ngrok 
 parser.add_argument("--ngrok", action="store_true", help="Enable Ngrok reverse tunneling")
 parser.add_argument("--token", type=str, help="Use Ngrok auth token")
 parser.add_argument("--models_path", type=str, default='/content/models/', help="Path to models directory")
-args = parser.parse_args()
+
 
 app_args = parser.parse_args()
   
