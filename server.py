@@ -29,7 +29,7 @@ if app_args.ngrok:
 		run_with_ngrok(app)
 
 # init
-models_path = args.models_path # set model path variable
+models_path = app_args.models_path # set model path variable
 temp_folder = 'temp'
 if not os.path.exists(models_path):
 	os.makedirs(models_path)
