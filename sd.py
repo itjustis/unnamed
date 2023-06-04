@@ -80,7 +80,7 @@ class SD:
 
             #x
             if self.mo:
-              self.controlnet.enable_model_cpu_offload()
+              #self.controlnet.enable_model_cpu_offload()
               self.controlnet.enable_xformers_memory_efficient_attention()
         else:
             self.controlnet = None
@@ -88,7 +88,7 @@ class SD:
         ######
         if self.mo:
           self.txt2img.enable_xformers_memory_efficient_attention()
-          self.txt2img.enable_model_cpu_offload()
+          #self.txt2img.enable_model_cpu_offload()
           
         self.clean()
     
