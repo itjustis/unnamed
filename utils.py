@@ -2,7 +2,7 @@ import torch
 import numpy as np
 from skimage import exposure
 from torchvision.transforms import ToPILImage as tensor_to_pil
-from torchvision.transforms import ToPILImage as pil_to_tensor
+from torchvision.transforms import ToTensor as pil_to_tensor
 import matplotlib.pyplot as plt
 from PIL import Image
 
