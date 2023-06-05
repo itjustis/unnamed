@@ -1,10 +1,10 @@
 import torch
 import numpy as np
 from skimage import exposure
-from torchvision.transforms import ToPILImage as tensor_to_pil
-from torchvision.transforms import ToTensor as pil_to_tensor
+from torchvision.transforms import ToPILImage, ToTensor
 import matplotlib.pyplot as plt
 from PIL import Image
+
 
 def create_gif(image_list, duration, output_path):
 	"""
@@ -19,6 +19,20 @@ def create_gif(image_list, duration, output_path):
 	image_list[0].save(
 		output_path, save_all=True, append_images=image_list[1:], optimize=False, duration=duration, loop=0
 	)
+
+def tensor_to_pil(tensor):
+	"""
+	Convert a PyTorch tensor to a PIL Image.
+	"""
+	to_pil = ToPILImage()
+	return to_pil(tensor)
+
+def pil_to_tensor(image):
+	"""
+	Convert a PIL Image to a PyTorch tensor.
+	"""
+	to_tensor = ToTensor()
+	return to_tensor(image)
 
 def display_tensor_image(tensor):
 	"""
