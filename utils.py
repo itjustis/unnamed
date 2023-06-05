@@ -81,7 +81,9 @@ def remap_displacement(image, displacement):
 	grid = grid.permute(0, 2, 3, 1)
 
 	# Apply the grid to the image
-	return torch.nn.functional.grid_sample(image.unsqueeze(0), grid, mode='bilinear', padding_mode='border', align_corners=True).squeeze(0)
+	#return torch.nn.functional.grid_sample(image.unsqueeze(0), grid, mode='bilinear', padding_mode='border', align_corners=True).squeeze(0)
+	return torch.nn.functional.grid_sample(image.unsqueeze(0), grid, mode='bilinear', padding_mode='reflection', align_corners=True).squeeze(0)
+
 
 def create_uv_map(image):
 	"""
@@ -143,5 +145,6 @@ def remap_displacement_depth(image, depth_map):
 	grid = grid.permute(0, 2, 3, 1)
 
 	# Apply the grid to the image
-	return torch.nn.functional.grid_sample(image.unsqueeze(0), grid, mode='bilinear', padding_mode='border', align_corners=True).squeeze(0)
+	return torch.nn.functional.grid_sample(image.unsqueeze(0), grid, mode='bilinear', padding_mode='reflection', align_corners=True).squeeze(0)
+
 
