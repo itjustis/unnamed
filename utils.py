@@ -5,6 +5,20 @@ from torchvision.transforms import ToPILImage, ToTensor
 import matplotlib.pyplot as plt
 from PIL import Image
 
+def add_noise(tensor, mean=0., std=1.):
+    """
+    Add Gaussian noise to a tensor.
+
+    Args:
+    tensor (torch.Tensor): The input tensor.
+    mean (float): Mean of the Gaussian distribution to generate noise.
+    std (float): Standard deviation of the Gaussian distribution to generate noise.
+
+    Returns:
+    torch.Tensor: The tensor with added noise.
+    """
+    noise = torch.randn_like(tensor) * std + mean
+    return (tensor - std) + noise
 
 def create_gif(image_list, duration, output_path):
 	"""
