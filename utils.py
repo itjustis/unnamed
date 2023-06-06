@@ -5,6 +5,14 @@ from torchvision.transforms import ToPILImage, ToTensor
 import matplotlib.pyplot as plt
 from PIL import Image
 
+import cv2
+
+def color_match(prev_img,color_match_sample):
+  prev_img_lab = cv2.cvtColor(prev_img, cv2.COLOR_RGB2LAB)
+  color_match_lab = cv2.cvtColor(color_match_sample, cv2.COLOR_RGB2LAB)
+  matched_lab = exposure.match_histograms(prev_img_lab, color_match_lab, multichannel=True)
+  return cv2.cvtColor(matched_lab, cv2.COLOR_LAB2RGB)
+
 def add_noise(tensor, mean=0., std=1.):
     """
     Add Gaussian noise to a tensor and clip values to valid range.
@@ -21,9 +29,6 @@ def add_noise(tensor, mean=0., std=1.):
     noisy_tensor = tensor + noise
     noisy_tensor = torch.clamp(noisy_tensor, tensor.min(), tensor.max())
     return noisy_tensor
-
-
-
 
 def create_gif(image_list, duration, output_path):
 	"""
