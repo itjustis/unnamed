@@ -7,7 +7,7 @@ from PIL import Image
 
 def add_noise(tensor, mean=0., std=1.):
     """
-    Add Gaussian noise to a tensor.
+    Add Gaussian noise to a tensor and clip values to valid range.
 
     Args:
     tensor (torch.Tensor): The input tensor.
@@ -18,7 +18,12 @@ def add_noise(tensor, mean=0., std=1.):
     torch.Tensor: The tensor with added noise.
     """
     noise = torch.randn_like(tensor) * std + mean
-    return (tensor - std) + noise
+    noisy_tensor = tensor + noise
+    noisy_tensor = torch.clamp(noisy_tensor, tensor.min(), tensor.max())
+    return noisy_tensor
+
+
+
 
 def create_gif(image_list, duration, output_path):
 	"""
