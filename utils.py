@@ -72,7 +72,13 @@ def remap_displacement(image, displacement):
 	`displacement` should be a PyTorch tensor with shape (2, H, W) where
 	the first channel is the x displacement and the second channel is the y displacement.
 	"""
-	# Make sure the image and displacement are on the same device
+	if isinstance(image, Image.Image):
+		image = pil_to_tensor(image)
+	elif isinstance(image, torch.Tensor):
+		pass
+	else:
+		raise ValueError('Image should be a PyTorch tensor or a PIL Image')
+    
 	image = image.to(displacement.device)
 
 	# Create a grid to apply the displacement
