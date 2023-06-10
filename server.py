@@ -143,16 +143,16 @@ def image_to_base64(img):
 
 # SD functions
 def imagine(args):
-	return sd.txt2img('skeleton knight in a vast lymnal space abandoned empty huge backrooms by moebius and kim dorland')[0][0]
+	return sd.txt2img(args.prompt)[0][0]
 
 def overpaint(args):
-	return sd.txt2img('skeleton knight in a vast lymnal space abandoned empty huge backrooms by moebius and kim dorland')[0][0]
+	return sd.txt2img(args.prompt)[0][0]
 	
 def inpaint(args):
-	return sd.txt2img('skeleton knight in a vast lymnal space abandoned empty huge backrooms by moebius and kim dorland')[0][0]
+	return sd.txt2img(args.prompt)[0][0]
 	
 def controlnet(args):
-	return sd.txt2img('skeleton knight in a vast lymnal space abandoned empty huge backrooms by moebius and kim dorland')[0][0]
+	return sd.txt2img(args.prompt)[0][0]
 	
 # Function to process jobs
 def process_job(job):
