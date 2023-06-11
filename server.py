@@ -121,8 +121,8 @@ def create_task(task):
 	log(task) ############## x ###############
 	if task in ['imagine', 'overpaint', 'inpaint', 'controlnet']:
 		jobjson = request.get_json()
-		args = jobjson.args
-		job_id = jobjson.id
+		args = jobjson['args']
+		job_id = jobjson['id']
 		
 		log(args) ############## x ###############
 		
