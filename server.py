@@ -72,11 +72,8 @@ def worker():
 		job = job_queue.get()
 		if job is None:
 			break
-		job_id = job["job_id"]
-		job_status[job_id]['status'] = "processing"
 		process_job(job)
-		job_status[job_id]['status'] = "completed"
-
+		
 # Start the worker thread
 worker_thread = Thread(target=worker)
 worker_thread.start()
@@ -158,6 +155,9 @@ def controlnet(args):
 def process_job(job):
 	task = job['args']['mode']
 	args = job['args']
+	job_id = job["job_id"]
+	job_status[job_id]['status'] = "processing"
+	
 	result = None
 
 	if task == 'imagine':
