@@ -41,13 +41,14 @@ available_models = [
 	#''
 	]
 
+############# xxx ##############
+
 def init(models):
 	download_models(models,models_path)
 	sd = SD( models_path, models[0], None)
 	return sd
 	
 sd = init(available_models)
-
 
 # Job queue
 job_queue = queue.Queue()
