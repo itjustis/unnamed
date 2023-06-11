@@ -129,6 +129,7 @@ def create_task(task):
 
 		
 		if (task!='imagine'):
+			b64_string = args['initImage']
 			filename = f"{job_id}.png"
 			img_path = save_image_from_b64(b64_string, temp_folder, filename)
 		else:
