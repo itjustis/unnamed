@@ -156,7 +156,7 @@ def controlnet(args):
 	
 # Function to process jobs
 def process_job(job):
-	task = job['task']
+	task = job['args']['mode']
 	args = job['args']
 	result = None
 
