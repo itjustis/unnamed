@@ -63,13 +63,23 @@ job_status = {}
 available_models = ['model1', 'model2', 'model3']
 
 
-# Helper function to save image from base64
 def save_image_from_b64(b64_string, folder, filename):
-	img_data = base64.b64decode(b64_string)
-	img = Image.open(BytesIO(img_data))
-	img_path = os.path.join(folder, filename)
-	img.save(img_path)
-	return img_path
+    img_data = base64.b64decode(b64_string)
+    img_file_path = os.path.join(folder, filename)
+    
+    # Save the raw data to a file for debugging
+    with open(img_file_path + ".raw", "wb") as raw_file:
+        raw_file.write(img_data)
+    
+    try:
+        img = Image.open(BytesIO(img_data))
+        img_path = os.path.join(folder, filename)
+        img.save(img_path)
+        return img_path
+    except Exception as e:
+        print("Exception when trying to open image: ", e)
+        return None
+
 
 def worker():
 	while True:
