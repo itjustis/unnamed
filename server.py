@@ -11,7 +11,7 @@ job_queue = queue.Queue()
 job_status = {}
 
 # Add command line arguments to enable Ngrok and apply a token
-parser = argparse.ArgumentParser(description="Run Flask app with optional Ngrok and token.")
+parser = argparse.ArgumentParser(description="Run Flask app with optional Ngrok.")
 parser.add_argument("--ngrok", action="store_true", help="Enable Ngrok reverse tunneling")
 parser.add_argument("--token", type=str, help="Use Ngrok auth token")
 parser.add_argument("--models_path", type=str, default='/content/models/', help="Path to models directory")
@@ -36,8 +36,8 @@ if not os.path.exists(temp_folder):
 
 available_models = [
 	'CompVis/stable-diffusion-v1-4',
-	'runwayml/stable-diffusion-v1-5',
-	'dreamlike-art/dreamlike-photoreal-2.0',
+	#'runwayml/stable-diffusion-v1-5',
+	#'dreamlike-art/dreamlike-photoreal-2.0',
 	#''
 	]
 
@@ -113,7 +113,7 @@ def create_task(task):
 		args = request.get_json()
 		
 		if (task!='imagine'):
-			b64_string = args['source_image']
+			b64_string = args['init_image']
 			filename = f"{uuid.uuid4()}.png"
 			img_path = save_image_from_b64(b64_string, temp_folder, filename)
 		else:
