@@ -10,21 +10,23 @@ app = Flask(__name__)
 job_queue = queue.Queue()
 job_status = {}
 
-# Add command line arguments to enable Ngrok and apply a token
-parser = argparse.ArgumentParser(description="Run Flask app with optional Ngrok.")
-parser.add_argument("--ngrok", action="store_true", help="Enable Ngrok reverse tunneling")
+import subprocess
+
+# Add command line arguments to enable Ngrok/LocalTunnel and apply a token
+parser = argparse.ArgumentParser(description="Run Flask app with optional Ngrok/LocalTunnel.")
+parser.add_argument("--tunnel", type=str, choices=["ngrok", "localtunnel"], help="Enable Ngrok or LocalTunnel reverse tunneling")
 parser.add_argument("--token", type=str, help="Use Ngrok auth token")
 parser.add_argument("--models_path", type=str, default='/content/models/', help="Path to models directory")
 parser.add_argument("--log", action="store_true", help="log mode")
 
 app_args = parser.parse_args()
-  
-if app_args.ngrok:
-	if app_args.token:
-		subprocess.check_call(["ngrok", "authtoken", app_args.token])
-		run_with_ngrok(app)
-	else:
-		run_with_ngrok(app)
+  if app_args.tunnel == "ngrok":
+    if app_args.token:
+        subprocess.check_call(["ngrok", "authtoken", app_args.token])
+    run_with_ngrok(app)
+elif app_args.tunnel == "localtunnel":
+    subprocess.Popen(["lt", "--port", "5000"])
+
 
 # init
 models_path = app_args.models_path # set model path variable
@@ -189,10 +191,13 @@ def process_job(job):
 
 
 if __name__ == '__main__':
-	app.debug = True
-	if app_args.ngrok:
-		print('running with ngrok')
-		run_with_ngrok(app)
-		app.run()
-	else:
-		app.run(host='0.0.0.0', port=5000)
+    app.debug = True
+    if app_args.tunnel == "ngrok":
+        print('running with ngrok')
+        run_with_ngrok(app)
+        app.run()
+    elif app_args.tunnel == "localtunnel":
+        print('running with localtunnel')
+        app.run(host='0.0.0.0', port=5000)
+    else:
+        app.run(host='0.0.0.0', port=5000)
