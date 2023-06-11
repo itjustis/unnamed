@@ -121,10 +121,9 @@ def create_task(task):
 		
 		log(args) ############## x ###############
 		
-		
 		if (task!='imagine'):
-			b64_string = args['init_image']
-			filename = f"{uuid.uuid4()}.png"
+			b64_string = args['initImage']
+			filename = f"{b64_string}_{uuid.uuid4()}.png"
 			img_path = save_image_from_b64(b64_string, temp_folder, filename)
 		else:
 			img_path = None
