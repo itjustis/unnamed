@@ -153,10 +153,10 @@ def image_to_base64(img):
 
 # SD functions
 def imagine(args):
-	return sd.txt2img(prompt=args['prompt'],num_inference_steps=args['steps'])[0][0]
+	return sd.txt2img(args['prompt'],num_inference_steps=args['steps'])[0][0]
 
 def overpaint(args):
-	return sd.img2img(prompt=args['prompt'],args['initImage'],num_inference_steps=args['steps'])[0][0]
+	return sd.img2img(args['prompt'],args['initImage'],num_inference_steps=args['steps'])[0][0]
 	
 def inpaint(args):
 	return sd.txt2img(args['prompt'],num_inference_steps=args['steps'])[0][0]
