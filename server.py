@@ -20,7 +20,8 @@ parser.add_argument("--models_path", type=str, default='/content/models/', help=
 parser.add_argument("--log", action="store_true", help="log mode")
 
 app_args = parser.parse_args()
-  if app_args.tunnel == "ngrok":
+
+if app_args.tunnel == "ngrok":
     if app_args.token:
         subprocess.check_call(["ngrok", "authtoken", app_args.token])
     run_with_ngrok(app)
