@@ -172,13 +172,13 @@ def imagine(args):
 	return sd.txt2img(args['prompt'],num_inference_steps=args['steps'])[0][0]
 
 def overpaint(args):
-	return sd.img2img(args['prompt'],Image.open(img_path).convert('RGB'),num_inference_steps=args['steps'])[0][0]
+	return sd.img2img(args['prompt'],Image.open(args['img_path']).convert('RGB'),num_inference_steps=args['steps'])[0][0]
 	
 def inpaint(args):
-	return sd.txt2img(args['prompt'],num_inference_steps=args['steps'])[0][0]
+	return sd.txt2img(args['prompt'],args['img_path'],num_inference_steps=args['steps'])[0][0]
 	
 def controlnet(args):
-	return sd.txt2img(args['prompt'],num_inference_steps=args['steps'])[0][0]
+	return sd.txt2img(args['prompt'],args['img_path'],num_inference_steps=args['steps'])[0][0]
 	
 # Function to process jobs
 def process_job(job):
