@@ -119,22 +119,25 @@ def log(message):
 def create_task(task):
 	log(task) ############## x ###############
 	if task in ['imagine', 'overpaint', 'inpaint', 'controlnet']:
-		args = request.get_json()
+		jobjson = request.get_json()
+		args = jobjson.args
+		job_id = jobjson.id
 		
 		log(args) ############## x ###############
 		
+
+		
 		if (task!='imagine'):
-			b64_string = args['initImage']
-			filename = f"{b64_string}_{uuid.uuid4()}.png"
+			filename = f"{job_id}.png"
 			img_path = save_image_from_b64(b64_string, temp_folder, filename)
 		else:
 			img_path = None
 
-		job_id = str(uuid.uuid4())
+		#job_id = str(uuid.uuid4())
+		args['img_path'] =  img_path
 		job = {
 			"job_id": job_id,
 			"task": task,
-			"img_path": img_path,
 			"status": "queued",
 			"args": args
 		}
@@ -157,7 +160,7 @@ def imagine(args):
 	return sd.txt2img(args['prompt'],num_inference_steps=args['steps'])[0][0]
 
 def overpaint(args):
-	return sd.img2img(args['prompt'],args['initImage'],num_inference_steps=args['steps'])[0][0]
+	return sd.img2img(args['prompt'],Image.open(img_path).convert('RGB'),num_inference_steps=args['steps'])[0][0]
 	
 def inpaint(args):
 	return sd.txt2img(args['prompt'],num_inference_steps=args['steps'])[0][0]
