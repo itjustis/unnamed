@@ -153,16 +153,16 @@ def image_to_base64(img):
 
 # SD functions
 def imagine(args):
-	return sd.txt2img(args.prompt)[0][0]
+	return sd.txt2img(prompt=args['prompt'],num_inference_steps=args['steps'])[0][0]
 
 def overpaint(args):
-	return sd.txt2img(args.prompt)[0][0]
+	return sd.img2img(prompt=args['prompt'],args['initImage'],num_inference_steps=args['steps'])[0][0]
 	
 def inpaint(args):
-	return sd.txt2img(args.prompt)[0][0]
+	return sd.txt2img(args['prompt'],num_inference_steps=args['steps'])[0][0]
 	
 def controlnet(args):
-	return sd.txt2img(args.prompt)[0][0]
+	return sd.txt2img(args['prompt'],num_inference_steps=args['steps'])[0][0]
 	
 # Function to process jobs
 def process_job(job):
@@ -190,7 +190,7 @@ def process_job(job):
 
 
 if __name__ == '__main__':
-	app.debug = False
+	app.debug = True
 	if app_args.ngrok:
 		print('running with ngrok')
 		run_with_ngrok(app)
