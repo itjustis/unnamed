@@ -15,7 +15,7 @@ parser = argparse.ArgumentParser(description="Run Flask app with optional Ngrok.
 parser.add_argument("--ngrok", action="store_true", help="Enable Ngrok reverse tunneling")
 parser.add_argument("--token", type=str, help="Use Ngrok auth token")
 parser.add_argument("--models_path", type=str, default='/content/models/', help="Path to models directory")
-
+parser.add_argument("--log", action="store_true", help="log mode")
 
 app_args = parser.parse_args()
   
@@ -105,10 +105,22 @@ def delete_job():
 	else:
 		return jsonify({"error": "Job not found"}), 404
 
+	
+def log(message):
+	if app_args.log:
+		print('####################################')
+		print(message)
+		print('####################################')
+	
+
 @app.route('/api/<path:task>', methods=['POST'])
 def create_task(task):
+	log(task) ############## x ###############
 	if task in ['imagine', 'overpaint', 'inpaint', 'controlnet']:
 		args = request.get_json()
+		
+		log(args) ############## x ###############
+		
 		
 		if (task!='imagine'):
 			b64_string = args['init_image']
@@ -154,7 +166,7 @@ def controlnet(args):
 	
 # Function to process jobs
 def process_job(job):
-	task = job['args']['mode']
+	task = job['task']
 	args = job['args']
 	job_id = job["job_id"]
 	job_status[job_id]['status'] = "processing"
