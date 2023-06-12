@@ -105,7 +105,7 @@ def models():
 	return jsonify(available_models)
 
 @app.route('/api/job/<path:job_id>/status', methods=['GET'])
-def get_job_status():
+def get_job_status(job_id):
 	console.log('sj',job_id)
 	if job_id and job_id in job_status:
 		return jsonify(job_status[job_id])
