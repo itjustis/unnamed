@@ -99,7 +99,7 @@ if app_args.token:
 public_url = ngrok.connect(5000)
 
 app = Flask(__name__)
-app.debug = True
+app.debug = False
 
 
 @app.route('/api/info/status', methods=['GET'])
