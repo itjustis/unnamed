@@ -4,6 +4,7 @@ from threading import Thread
 from flask import Flask, request, jsonify
 from pyngrok import ngrok, conf
 from PIL import Image
+from IPython import display 
 
 from sd import SD, download_models
 
@@ -46,7 +47,7 @@ available_models = [
 
 ############# xxx ##############
 def clear():
-    disp.clear_output()
+    display.clear_output()
 def init(models):
 	download_models(models,models_path)
 	sd = SD( models_path, models[0], None)
