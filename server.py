@@ -24,6 +24,8 @@ app_args = parser.parse_args()
 
 # init
 app = Flask(__name__)
+app.debug = True
+
 # Setting the authtoken (optional)
 if app_args.token:
 	conf.get_default().auth_token =  app_args.token
