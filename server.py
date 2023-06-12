@@ -13,20 +13,12 @@ job_status = {}
 
 import subprocess
 
-# Add command line arguments to enable Ngrok/LocalTunnel and apply a token
 parser = argparse.ArgumentParser(description="Run Flask app with Ngrok")
 parser.add_argument("--token", type=str, help="Use Ngrok auth token")
 parser.add_argument("--models_path", type=str, default='/content/models/', help="Path to models directory")
 parser.add_argument("--log", action="store_true", help="log mode")
 
 app_args = parser.parse_args()
-
-if app_args.tunnel == "ngrok":
-    if app_args.token:
-        subprocess.check_call(["ngrok", "authtoken", app_args.token])
-    run_with_ngrok(app)
-elif app_args.tunnel == "localtunnel":
-    subprocess.Popen(["lt", "--port", "5000"])
 
 
 # init
