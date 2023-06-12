@@ -1,7 +1,7 @@
 import os, uuid, base64, argparse, subprocess , queue
 from io import BytesIO
 from threading import Thread
-from flask import Flask, request, jsonify, logging
+from flask import Flask, request, jsonify
 from pyngrok import ngrok, conf
 from PIL import Image
 from IPython import display as disp
@@ -145,8 +145,8 @@ def create_task(task):
 	job_id = job_data['id']
 
 	# Log request data for debugging.
-	logging.info(f"Task: {task}")
-	logging.info(f"Args: {args}")
+	log(f"Task: {task}")
+	log(f"Args: {args}")
 
 	img_path = None
 
