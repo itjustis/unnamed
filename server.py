@@ -96,9 +96,11 @@ worker_thread.start()
 if app_args.token:
 	conf.get_default().auth_token =  app_args.token
 ##
+public_url = ngrok.connect(5000)
+
 app = Flask(__name__)
 app.debug = True
-public_url = ngrok.connect(5000)
+
 
 @app.route('/api/info/status', methods=['GET'])
 def status():
