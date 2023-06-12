@@ -215,7 +215,7 @@ def overpaint(args):
 		num_inference_steps=int(args['steps']),
 		guidance_scale=float(args['scale']),
 		negative_prompt=args['negative_prompt'],
-		strength=args['strength']
+		strength=float(args['strength'])
 	)[0][0]
 	
 def inpaint(args):
