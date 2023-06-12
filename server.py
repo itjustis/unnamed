@@ -203,8 +203,8 @@ def image_to_base64(img):
 def imagine(args):
 	return sd.txt2img(
 		args['prompt'],
-		num_inference_steps=args['steps'],
-		guidance_scale=args['scale'],
+		num_inference_steps=int(args['steps']),
+		guidance_scale=float(args['scale']),
 		negative_prompt=args['negative_prompt']
 	)[0][0]
 
@@ -212,8 +212,8 @@ def overpaint(args):
 	return sd.img2img(
 		args['prompt'],
 		Image.open(args['img_path']).convert('RGB'),
-		num_inference_steps=args['steps'],
-		guidance_scale=args['scale'],
+		num_inference_steps=int(args['steps']),
+		guidance_scale=float(args['scale']),
 		negative_prompt=args['negative_prompt'],
 		strength=args['strength']
 	)[0][0]
