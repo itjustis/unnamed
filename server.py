@@ -64,7 +64,8 @@ available_models = ['model1', 'model2', 'model3']
 
 
 def save_image_from_b64(b64_string, folder, filename):
-    img_data = base64.b64decode(b64_string)
+    print(b64_string)
+    img_data = base64.urlsafe_b64decode(b64_string)
     img_file_path = os.path.join(folder, filename)
     
     # Save the raw data to a file for debugging
