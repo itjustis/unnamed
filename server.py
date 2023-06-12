@@ -95,16 +95,16 @@ def worker():
 worker_thread = Thread(target=worker)
 worker_thread.start()
 
-@app.route('/api/status', methods=['GET'])
+@app.route('/api/info/status', methods=['GET'])
 def status():
 	# TODO: Return the status of jobs in queue, server idleness/workload, and GPU/RAM data
 	pass
 
-@app.route('/api/models', methods=['GET'])
+@app.route('/api/info/models', methods=['GET'])
 def models():
 	return jsonify(available_models)
 
-@app.route('/api/job_status', methods=['GET'])
+@app.route('/api/job/status', methods=['GET'])
 def get_job_status():
 	job_id = request.args.get('id')
 	if job_id and job_id in job_status:
@@ -112,7 +112,7 @@ def get_job_status():
 	else:
 		return jsonify({"error": "Job not found"}), 404
 
-@app.route('/api/delete_job', methods=['DELETE'])
+@app.route('/api/job/delete', methods=['DELETE'])
 def delete_job():
 	job_id = request.args.get('jobid')
 	if job_id and job_id in job_status:
