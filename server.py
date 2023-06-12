@@ -4,7 +4,7 @@ from threading import Thread
 from flask import Flask, request, jsonify
 from pyngrok import ngrok, conf
 from PIL import Image
-from IPython import display 
+from IPython import display as disp
 
 from sd import SD, download_models
 
@@ -47,7 +47,7 @@ available_models = [
 
 ############# xxx ##############
 def clear():
-    display.clear_output()
+    disp.clear_output()
 def init(models):
 	download_models(models,models_path)
 	sd = SD( models_path, models[0], None)
@@ -104,10 +104,9 @@ def status():
 def models():
 	return jsonify(available_models)
 
-@app.route('/api/job/status', methods=['GET'])
+@app.route('/api/job/<path:job_id>/status', methods=['GET'])
 def get_job_status():
-	job_id = request.args.id
-	console.log('sj',request.args.id,request.args)
+	console.log('sj',job_id)
 	if job_id and job_id in job_status:
 		return jsonify(job_status[job_id])
 	else:
