@@ -222,4 +222,5 @@ def process_job(job):
 
 
 if __name__ == "__main__":
+    log("Public URL: "+public_url)
     app.run()
