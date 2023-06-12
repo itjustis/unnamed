@@ -22,17 +22,6 @@ parser.add_argument("--log", action="store_true", help="log mode")
 app_args = parser.parse_args()
 
 
-# init
-app = Flask(__name__)
-app.debug = True
-
-# Setting the authtoken (optional)
-if app_args.token:
-	conf.get_default().auth_token =  app_args.token
-##
-public_url = ngrok.connect(5000)
-print("Public URL:", public_url)
-#
 models_path = app_args.models_path # set model path variable
 temp_folder = 'temp'
 if not os.path.exists(models_path):
@@ -102,6 +91,14 @@ def worker():
 # Start the worker thread
 worker_thread = Thread(target=worker)
 worker_thread.start()
+
+# init
+if app_args.token:
+	conf.get_default().auth_token =  app_args.token
+##
+app = Flask(__name__)
+app.debug = True
+public_url = ngrok.connect(5000)
 
 @app.route('/api/info/status', methods=['GET'])
 def status():
@@ -248,7 +245,6 @@ def process_job(job):
 		job_status[job['job_id']] = {"status": "completed", "result": b64_result}
 	else:
 		job_status[job['job_id']] = {"status": "failed"}
-
 
 if __name__ == "__main__":
     clear()
