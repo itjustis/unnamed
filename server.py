@@ -129,68 +129,99 @@ def get_job_status(job_id):
 		return jsonify({"error": "Job not found"}), 404
 
 
+
+# List of allowed tasks.
+ALLOWED_TASKS = ['imagine', 'overpaint', 'inpaint', 'controlnet']
+
 @app.route('/api/<path:task>', methods=['POST'])
 def create_task(task):
-	log(task) ############## x ###############
-	if task in ['imagine', 'overpaint', 'inpaint', 'controlnet']:
-		jobjson = request.get_json()
-		args = jobjson['args']
-		job_id = jobjson['id']
-		
-		log(args) ############## x ###############
-		
-		if (task!='imagine'):
-			b64_string = args['initImage']
-			filename = f"{job_id}.png"
-			#img_path = save_image_from_b64(b64_string, temp_folder, filename)
-			f = BytesIO()
-			f.write(base64.b64decode(b64_string))
-			f.seek(0)
-			
-			if inpaint=="true":
-				img = Image.open(f)
-			else:
-				img = Image.open(f).convert("RGB")
-			img.save(filename)
-			img_path = filename
-		else:
-			img_path = None
-
-		#job_id = str(uuid.uuid4())
-		args['img_path'] =  img_path
-		job = {
-			"job_id": job_id,
-			"task": task,
-			"status": "queued",
-			"args": args
-		}
-
-		job_queue.put(job)
-		
-		job_status[job_id] = {"job_id": job_id, "status": "queued"}
-
-		return jsonify(job_status[job_id])
-	else:
+	# Verify if the task is valid.
+	if task not in ALLOWED_TASKS:
 		return jsonify({"error": "Invalid task"}), 400
+
+	# Fetch request data.
+	job_data = request.get_json()
+	args = job_data['args']
+	job_id = job_data['id']
+
+	# Log request data for debugging.
+	logging.info(f"Task: {task}")
+	logging.info(f"Args: {args}")
+
+	img_path = None
+
+	# Process the image if the task is not 'imagine'.
+	if task != 'imagine':
+		img_path = process_image(args, job_id)
+
+	# Create a job object and put it in the queue.
+	job = create_job(args, job_id, img_path, task)
+
+	# Update the job status and return the response.
+	job_status[job_id] = {"job_id": job_id, "status": "queued"}
+
+	return jsonify(job_status[job_id])
+
+def process_image(args, job_id):
+	"""Decode the image from base64 and save it."""
+	b64_string = args['initImage']
+	f = BytesIO()
+	f.write(base64.b64decode(b64_string))
+	f.seek(0)
+
+	img = Image.open(f)
+
+	if args.get('inpaint') != "true":
+		img = img.convert("RGB")
+
+	filename = f"temp/{job_id}.png"
+	img.save(filename)
+
+	return filename
+
+def create_job(args, job_id, img_path, task):
+	"""Create a job object."""
+	args['img_path'] = img_path
+	job = {
+		"job_id": job_id,
+		"task": task,
+		"status": "queued",
+		"args": args
+	}
+	job_queue.put(job)
+
+	return job
 
 # Helper function to convert PIL image to base64
 def image_to_base64(img):
 	buffered = BytesIO()
 	img.save(buffered, format="PNG")
 	return base64.b64encode(buffered.getvalue()).decode("utf-8")
-
+	
 # SD functions
 def imagine(args):
-	return sd.txt2img(args['prompt'],num_inference_steps=args['steps'])[0][0]
+	return sd.txt2img(
+		args['prompt'],
+		num_inference_steps=args['steps'],
+		guidance_scale=args['scale'],
+		negative_prompt=args['negative_prompt']
+	)[0][0]
 
 def overpaint(args):
-	return sd.img2img(args['prompt'],Image.open(args['img_path']).convert('RGB'),num_inference_steps=args['steps'])[0][0]
+	return sd.img2img(
+		args['prompt'],
+		num_inference_steps=args['steps'],
+		guidance_scale=args['scale'],
+		negative_prompt=args['negative_prompt'],
+		strength=args['strength'],
+		Image.open(args['img_path']).convert('RGB')
+	)[0][0]
 	
 def inpaint(args):
-	return sd.txt2img(args['prompt'],args['img_path'],num_inference_steps=args['steps'])[0][0]
+	return None
 	
 def controlnet(args):
-	return sd.txt2img(args['prompt'],args['img_path'],num_inference_steps=args['steps'])[0][0]
+	return None
 	
 # Function to process jobs
 def process_job(job):
