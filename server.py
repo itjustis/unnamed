@@ -210,11 +210,11 @@ def imagine(args):
 def overpaint(args):
 	return sd.img2img(
 		args['prompt'],
+		Image.open(args['img_path']).convert('RGB'),
 		num_inference_steps=args['steps'],
 		guidance_scale=args['scale'],
 		negative_prompt=args['negative_prompt'],
-		strength=args['strength'],
-		Image.open(args['img_path']).convert('RGB')
+		strength=args['strength']
 	)[0][0]
 	
 def inpaint(args):
