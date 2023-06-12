@@ -83,7 +83,13 @@ def save_image_from_b64(b64_string, folder, filename):
         print("Exception when trying to open image: ", e)
         return None
 
-
+	
+def log(message):
+	if app_args.log:
+		print('####################################')
+		print(message)
+		print('####################################')
+	
 def worker():
 	while True:
 		job = job_queue.get()
@@ -104,14 +110,6 @@ def status():
 def models():
 	return jsonify(available_models)
 
-@app.route('/api/job/<path:job_id>/status', methods=['GET'])
-def get_job_status(job_id):
-	log(job_id)
-	if job_id and job_id in job_status:
-		return jsonify(job_status[job_id])
-	else:
-		return jsonify({"error": "Job not found"}), 404
-
 @app.route('/api/job/delete', methods=['DELETE'])
 def delete_job():
 	job_id = request.args.get('jobid')
@@ -121,13 +119,15 @@ def delete_job():
 	else:
 		return jsonify({"error": "Job not found"}), 404
 
-	
-def log(message):
-	if app_args.log:
-		print('####################################')
-		print(message)
-		print('####################################')
-	
+
+@app.route('/api/job/<path:job_id>/status', methods=['GET'])
+def get_job_status(job_id):
+	log(job_id)
+	if job_id and job_id in job_status:
+		return jsonify(job_status[job_id])
+	else:
+		return jsonify({"error": "Job not found"}), 404
+
 
 @app.route('/api/<path:task>', methods=['POST'])
 def create_task(task):
@@ -166,9 +166,10 @@ def create_task(task):
 		}
 
 		job_queue.put(job)
-		job_status[job_id] = job
+		
+		job_status[job_id] = {"job_id": job_id, "status": "queued"}
 
-		return jsonify({"job_id": job_id, "status": "queued"})
+		return jsonify(job_status[job_id])
 	else:
 		return jsonify({"error": "Invalid task"}), 400
 
