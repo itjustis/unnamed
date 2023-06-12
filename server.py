@@ -1,7 +1,7 @@
 import os, uuid, base64, argparse, subprocess , queue
 from io import BytesIO
 from threading import Thread
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, logging
 from pyngrok import ngrok, conf
 from PIL import Image
 from IPython import display as disp
