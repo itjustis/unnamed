@@ -45,7 +45,8 @@ available_models = [
 	]
 
 ############# xxx ##############
-
+def clear():
+    disp.clear_output()
 def init(models):
 	download_models(models,models_path)
 	sd = SD( models_path, models[0], None)
@@ -215,5 +216,6 @@ def process_job(job):
 
 
 if __name__ == "__main__":
+    clear()
     log(public_url)
     app.run()
