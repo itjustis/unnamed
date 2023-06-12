@@ -105,7 +105,7 @@ def models():
 
 @app.route('/api/job_status', methods=['GET'])
 def get_job_status():
-	job_id = request.args.get('jobid')
+	job_id = request.args.get('id')
 	if job_id and job_id in job_status:
 		return jsonify(job_status[job_id])
 	else:
