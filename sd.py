@@ -20,6 +20,9 @@ from diffusers import (
     UniPCMultistepScheduler,
 )
 from huggingface_hub import snapshot_download
+from clip_interrogator import Config, Interrogator
+
+ci = Interrogator(Config(clip_model_name="ViT-L-14/openai"))
 
 class SD:
     def __init__(self, models_path, model_id, controlnet_model_id, torch_dtype=torch.float16, mo=True):
@@ -41,6 +44,7 @@ class SD:
         self.dpm = DPMSolverMultistepScheduler.from_pretrained(model_path, subfolder="scheduler")
         self.unipcm = UniPCMultistepScheduler.from_pretrained(model_path, subfolder="scheduler")
         self.init_models(model_path,controlnet_model_path)
+        self.interrogate = ci.interrogate
         self.clean()
 
     def init_models(self, model_path, controlnet_model_path):
