@@ -4,7 +4,7 @@ import subprocess
 def install(package):
     subprocess.check_call(["python", "-m", "pip", "install", "-q", package])
 
-packages = ["diffusers==0.14.0","transformers","xformers","git+https://github.com/huggingface/accelerate.git","opencv-contrib-python","controlnet_aux","huggingface_hub","pyngrok","tomesd"]
+packages = ["diffusers==0.14.0","transformers","xformers","git+https://github.com/huggingface/accelerate.git","opencv-contrib-python","controlnet_aux","huggingface_hub","pyngrok","tomesd","clip-interrogator==0.6.0"]
     
 def main():
 
