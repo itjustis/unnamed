@@ -212,7 +212,7 @@ def overpaint(args):
 	prompt = args['prompt']
 	image = Image.open(args['img_path']).convert('RGB')
 	if prompt == "":
-		prompt = sd.interrogate(input_image, min_flavors=2, max_flavors=4)
+		prompt = sd.interrogate(image, min_flavors=2, max_flavors=4)
 	return sd.img2img(
 		prompt,
 		image,
