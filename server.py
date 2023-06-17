@@ -237,7 +237,7 @@ def process_job(job):
 	b64_result = ''
 	divider = ''
 	if variations > 1:
-		divider = +','
+		divider = ','
 		
 	log('variations: '+variations)
 		
