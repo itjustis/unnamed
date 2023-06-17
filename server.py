@@ -231,7 +231,7 @@ def process_job(job):
 	args = job['args']
 	job_id = job["job_id"]
 	job_status[job_id]['status'] = "processing"
-	variations = args['variations']
+	variations = int(args['variations'])
 	
 	result = None
 	b64_result = ''
