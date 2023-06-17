@@ -239,7 +239,7 @@ def process_job(job):
 	if variations > 1:
 		divider = ','
 		
-	log('variations: '+variations)
+	log('variations: '+str(variations))
 		
 	for i in range(variations):
 		log('generating image #'+str(i))
