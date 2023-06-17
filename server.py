@@ -209,9 +209,13 @@ def imagine(args):
 	)[0][0]
 
 def overpaint(args):
+	prompt = args['prompt']
+	image = Image.open(args['img_path']).convert('RGB')
+	if prompt == "":
+		prompt = sd.interrogate(input_image, min_flavors=2, max_flavors=4)
 	return sd.img2img(
-		args['prompt'],
-		Image.open(args['img_path']).convert('RGB'),
+		prompt,
+		image,
 		num_inference_steps=int(args['steps']),
 		guidance_scale=float(args['scale']),
 		negative_prompt=args['negative_prompt'],
