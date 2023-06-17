@@ -239,7 +239,10 @@ def process_job(job):
 	if variations > 1:
 		divider = +','
 		
+	log('variations: '+variations)
+		
 	for i in range(variations):
+		log('generating image #'+str(i))
 		if task == 'imagine':
 			result = imagine(args)
 		elif task == 'overpaint':
