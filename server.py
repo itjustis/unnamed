@@ -209,12 +209,9 @@ def imagine(args):
 	)[0][0]
 
 def overpaint(args):
-	prompt = args['prompt']
 	image = Image.open(args['img_path']).convert('RGB')
-	if prompt == "":
-		prompt = sd.interrogate(image, min_flavors=2, max_flavors=4)
 	return sd.img2img(
-		prompt,
+		args['prompt'],
 		image,
 		num_inference_steps=int(args['steps']),
 		guidance_scale=float(args['scale']),
@@ -234,20 +231,30 @@ def process_job(job):
 	args = job['args']
 	job_id = job["job_id"]
 	job_status[job_id]['status'] = "processing"
+	variations = args['variations']
 	
 	result = None
-
-	if task == 'imagine':
-		result = imagine(args)
-	elif task == 'overpaint':
-		result = overpaint(args)
-	elif task == 'inpaint':
-		result = inpaint(args)
-	elif task == 'controlnet':
-		result = controlnet(args)
+	b64_result = ''
+	divider = ''
+	if variations > 1:
+		divider = +','
+		
+	for i in range(variations):
+		if task == 'imagine':
+			result = imagine(args)
+		elif task == 'overpaint':
+			if args['prompt'] == "":
+				image = Image.open(args['img_path']).convert('RGB')
+				args['prompt'] = sd.interrogate(image, min_flavors=2, max_flavors=4)
+			result = overpaint(args)
+		elif task == 'inpaint':
+			result = inpaint(args)
+		elif task == 'controlnet':
+			result = controlnet(args)
+		b64_result+=image_to_base64(result)+divider
 
 	if result is not None:
-		b64_result = image_to_base64(result)
+		
 		job_status[job['job_id']] = {"status": "completed", "result": b64_result}
 	else:
 		job_status[job['job_id']] = {"status": "failed"}
