@@ -215,8 +215,6 @@ def overpaint(args):
 	return sd.img2img(
 		args['prompt'],
 		image,
-		width=args['w'],
-		height=args['h'],
 		num_inference_steps=int(args['steps']),
 		guidance_scale=float(args['scale']),
 		negative_prompt=args['negative_prompt'],
