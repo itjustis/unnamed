@@ -240,7 +240,7 @@ def process_job(job):
 	log('variations: '+str(variations))
 		
 	for i in range(variations):
-		if i>0 and i!=(variations-1:
+		if variations>1 and i!=(variations-1):
 			       divider = ','
 		else:
 			       divider = ''
