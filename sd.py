@@ -22,7 +22,7 @@ from diffusers import (
 from huggingface_hub import snapshot_download
 from clip_interrogator import Config, Interrogator
 
-ci = Interrogator(Config(clip_model_name="ViT-L-14/openai"))
+
 
 class SD:
     def __init__(self, models_path, model_id, controlnet_model_id, torch_dtype=torch.float16, mo=True):
@@ -33,6 +33,8 @@ class SD:
           controlnet_model_path  = os.path.join(models_path,controlnet_model_id)
         else:
           controlnet_model_path = None
+        
+        self.ci = Interrogator(Config(clip_model_name="ViT-L-14/openai"))
 
         #self.UniPCM = UniPCMultistepScheduler.from_config(pipe.scheduler.config)
         self.ddpm = DDPMScheduler.from_pretrained(model_path, subfolder="scheduler")
@@ -44,14 +46,14 @@ class SD:
         self.dpm = DPMSolverMultistepScheduler.from_pretrained(model_path, subfolder="scheduler")
         self.unipcm = UniPCMultistepScheduler.from_pretrained(model_path, subfolder="scheduler")
         self.init_models(model_path,controlnet_model_path)
-        self.interrogate = ci.interrogate
+        self.interrogate = self.ci.interrogate
         self.clean()
 
     def init_models(self, model_path, controlnet_model_path):
         self.txt2img = StableDiffusionPipeline.from_pretrained(
             model_path, torch_dtype=self.torch_dtype
         ).to('cuda')
-        self.txt2img.scheduler = euler_a
+        self.txt2img.scheduler = self.unipcm
         
         self.img2img = StableDiffusionImg2ImgPipeline(
             vae=self.txt2img.vae,
