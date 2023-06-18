@@ -39,7 +39,7 @@ class SD:
         self.ddim = DDIMScheduler.from_pretrained(model_path, subfolder="scheduler")
         self.pndm = PNDMScheduler.from_pretrained(model_path, subfolder="scheduler")
         self.lms = LMSDiscreteScheduler.from_pretrained(model_path, subfolder="scheduler")
-        self.euler_anc = EulerAncestralDiscreteScheduler.from_pretrained(model_path, subfolder="scheduler")
+        self.euler_a = EulerAncestralDiscreteScheduler.from_pretrained(model_path, subfolder="scheduler")
         self.euler = EulerDiscreteScheduler.from_pretrained(model_path, subfolder="scheduler")
         self.dpm = DPMSolverMultistepScheduler.from_pretrained(model_path, subfolder="scheduler")
         self.unipcm = UniPCMultistepScheduler.from_pretrained(model_path, subfolder="scheduler")
@@ -51,6 +51,7 @@ class SD:
         self.txt2img = StableDiffusionPipeline.from_pretrained(
             model_path, torch_dtype=self.torch_dtype
         ).to('cuda')
+        self.txt2img.scheduler = euler_a
         
         self.img2img = StableDiffusionImg2ImgPipeline(
             vae=self.txt2img.vae,
