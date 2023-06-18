@@ -235,9 +235,7 @@ def process_job(job):
 	
 	result = None
 	b64_result = ''
-	divider = ''
-	if variations > 1:
-		divider = ','
+	divider = ','
 		
 	log('variations: '+str(variations))
 		
@@ -254,6 +252,7 @@ def process_job(job):
 			result = inpaint(args)
 		elif task == 'controlnet':
 			result = controlnet(args)
+			
 		b64_result+=image_to_base64(result)+divider
 
 	if result is not None:
