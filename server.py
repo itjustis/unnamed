@@ -235,11 +235,15 @@ def process_job(job):
 	
 	result = None
 	b64_result = ''
-	divider = ','
+	divider = ''
 		
 	log('variations: '+str(variations))
 		
 	for i in range(variations):
+		if i>0 and i!=(variations-1:
+			       divider = ','
+		else:
+			       divider = ''
 		log('generating image #'+str(i))
 		if task == 'imagine':
 			result = imagine(args)
