@@ -20,6 +20,7 @@ from diffusers import (
     DPMSolverMultistepScheduler,
     UniPCMultistepScheduler,
 )
+from unnamed.stable_diffusion_controlnet_img2img import StableDiffusionControlNetImg2ImgPipeline
 from huggingface_hub import snapshot_download
 from clip_interrogator import Config, Interrogator
 
@@ -61,12 +62,11 @@ class SD:
           self.txt2img.enable_xformers_memory_efficient_attention()
           self.txt2img.enable_model_cpu_offload()
         
-        self.img2img = DiffusionPipeline(
+        self.img2img = StableDiffusionControlNetImg2ImgPipeline(
             vae=self.txt2img.vae,
             text_encoder=self.txt2img.text_encoder,
             tokenizer=self.txt2img.tokenizer,
             unet=self.txt2img.unet,
-            custom_pipeline="stable_diffusion_controlnet_img2img",
             controlnet=None,
             torch_dtype=torch.float16,
             scheduler=self.txt2img.scheduler,
