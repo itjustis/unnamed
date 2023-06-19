@@ -68,7 +68,6 @@ class SD:
             tokenizer=self.txt2img.tokenizer,
             unet=self.txt2img.unet,
             controlnet=None,
-            torch_dtype=torch.float16,
             scheduler=self.txt2img.scheduler,
             safety_checker=None,
             feature_extractor=None,
