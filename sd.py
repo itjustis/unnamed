@@ -68,7 +68,7 @@ class SD:
             unet=self.txt2img.unet,
             custom_pipeline="stable_diffusion_controlnet_img2img",
             controlnet=None,
-            torch_dtype=torch.float16
+            torch_dtype=torch.float16,
             scheduler=self.txt2img.scheduler,
             safety_checker=None,
             feature_extractor=None,
@@ -85,6 +85,7 @@ class SD:
                 text_encoder=self.txt2img.text_encoder,
                 tokenizer=self.txt2img.tokenizer,
                 unet=self.txt2img.unet,
+                torch_dtype=torch.float16,
                 scheduler=self.txt2img.scheduler,
                 safety_checker=None,
                 feature_extractor=None,
