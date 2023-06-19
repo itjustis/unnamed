@@ -60,7 +60,7 @@ class SD:
         ######
         if self.mo:
           self.txt2img.enable_xformers_memory_efficient_attention()
-          self.txt2img.enable_model_cpu_offload()
+          #self.txt2img.enable_model_cpu_offload()
         
         self.img2img = StableDiffusionControlNetImg2ImgPipeline(
             vae=self.txt2img.vae,
