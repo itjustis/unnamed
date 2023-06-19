@@ -3,9 +3,44 @@ import numpy as np
 from skimage import exposure
 from torchvision.transforms import ToPILImage, ToTensor
 import matplotlib.pyplot as plt
-from PIL import Image
-
+from PIL import Image, ImageFilter, ImageDraw, ImageOps
 import cv2
+
+def add_border(image, border):
+    # Define the border color
+    color = (0, 0, 0)  # black
+
+    # Create a new image with a border
+    new_image = ImageOps.expand(image, border=border, fill=color)
+
+    return new_image
+
+
+def crop_image(image, crop_pixels):
+    width, height = image.size
+
+    # Define the cropping box - left, upper, right, lower
+    crop_box = (crop_pixels, crop_pixels, width - crop_pixels, height - crop_pixels)
+
+    # Create a new image by cropping the original image
+    new_image = image.crop(crop_box)
+
+    return new_image
+
+
+def upscale_image(image_path, upscale_factor=4, padding_size=768):
+    img = Image.open(image_path)
+    display(img)
+    width, height = img.size
+    new_size = (width * upscale_factor, height * upscale_factor)
+    img_upscaled = img.resize(new_size, Image.ANTIALIAS)
+
+
+    img_extended = add_border(img_upscaled, padding_size//3)
+
+    print('img_upscaled.size',img_upscaled.size,'. img_extended.size',img_extended.size)
+
+    return img_extended, img_upscaled.size
 
 def color_match(prev_img,color_match_sample):
   prev_img_lab = cv2.cvtColor(prev_img, cv2.COLOR_RGB2LAB)
