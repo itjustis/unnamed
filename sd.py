@@ -4,7 +4,7 @@ import torch , os, gc, torch
 from diffusers.utils import load_image
 from transformers import ( pipeline, CLIPTokenizer, CLIPTextModel )
 from diffusers import (
-    DiffusionPipeline
+    DiffusionPipeline,
     StableDiffusionPipeline,
     StableDiffusionImg2ImgPipeline,
     StableDiffusionControlNetPipeline,
