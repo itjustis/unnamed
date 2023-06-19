@@ -54,10 +54,12 @@ class SD:
         self.txt2img = StableDiffusionPipeline.from_pretrained(
             model_path, torch_dtype=self.torch_dtype
         ).to('cuda')
-        self.txt2img.scheduler = self.unipcm
+        self.txt2img.scheduler = self.euler_a
         
-        self.controlnet_tile = ControlNetModel.from_pretrained('lllyasviel/control_v11f1e_sd15_tile',
-                                             torch_dtype=torch.float16)
+        ######
+        if self.mo:
+          self.txt2img.enable_xformers_memory_efficient_attention()
+          self.txt2img.enable_model_cpu_offload()
         
         self.img2img = DiffusionPipeline(
             vae=self.txt2img.vae,
@@ -99,10 +101,7 @@ class SD:
         else:
             self.controlnet = None
         
-        ######
-        if self.mo:
-          self.txt2img.enable_xformers_memory_efficient_attention()
-          #self.txt2img.enable_model_cpu_offload()
+        
           
         self.clean()
     
