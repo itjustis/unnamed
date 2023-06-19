@@ -26,7 +26,7 @@ from clip_interrogator import Config, Interrogator
 
 
 class SD:
-    def __init__(self, models_path, model_id, controlnet_model_id, torch_dtype=torch.float16, mo=True):
+    def __init__(self, models_path, model_id, controlnet_model_id=None, torch_dtype=torch.float16, mo=True):
         self.torch_dtype = torch_dtype
         self.mo = mo
         model_path = os.path.join(models_path,model_id)
