@@ -4,6 +4,7 @@ import torch , os, gc, torch
 from diffusers.utils import load_image
 from transformers import ( pipeline, CLIPTokenizer, CLIPTextModel )
 from diffusers import (
+    DiffusionPipeline
     StableDiffusionPipeline,
     StableDiffusionImg2ImgPipeline,
     StableDiffusionControlNetPipeline,
@@ -55,11 +56,17 @@ class SD:
         ).to('cuda')
         self.txt2img.scheduler = self.unipcm
         
-        self.img2img = StableDiffusionImg2ImgPipeline(
+        self.controlnet_tile = ControlNetModel.from_pretrained('lllyasviel/control_v11f1e_sd15_tile',
+                                             torch_dtype=torch.float16)
+        
+        self.img2img = DiffusionPipeline(
             vae=self.txt2img.vae,
             text_encoder=self.txt2img.text_encoder,
             tokenizer=self.txt2img.tokenizer,
             unet=self.txt2img.unet,
+            custom_pipeline="stable_diffusion_controlnet_img2img",
+            controlnet=None,
+            torch_dtype=torch.float16
             scheduler=self.txt2img.scheduler,
             safety_checker=None,
             feature_extractor=None,
