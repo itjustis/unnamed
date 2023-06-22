@@ -23,8 +23,18 @@ from diffusers import (
 from unnamed.stable_diffusion_controlnet_img2img import StableDiffusionControlNetImg2ImgPipeline
 from huggingface_hub import snapshot_download
 from clip_interrogator import Config, Interrogator
+import tomesd
 
-
+def resize_for_condition_image(input_image: Image, resolution: int):
+    input_image = input_image.convert("RGB")
+    W, H = input_image.size
+    k = float(resolution) / min(H, W)
+    H *= k
+    W *= k
+    H = int(round(H / 64.0)) * 64
+    W = int(round(W / 64.0)) * 64
+    img = input_image.resize((W, H), resample=Image.LANCZOS)
+    return img
 
 class SD:
     def __init__(self, models_path, model_id, controlnet_model_id=None, torch_dtype=torch.float16, mo=True):
@@ -57,12 +67,25 @@ class SD:
         ).to('cuda')
         self.txt2img.scheduler = self.euler_a
         
+        tomesd.apply_patch(self.txt2img, ratio=0.5)
+        
         ######
         if self.mo:
           self.txt2img.enable_xformers_memory_efficient_attention()
           #self.txt2img.enable_model_cpu_offload()
+          
+        self.img2img = StableDiffusionImg2ImgPipeline(
+            vae=self.txt2img.vae,
+            text_encoder=self.txt2img.text_encoder,
+            tokenizer=self.txt2img.tokenizer,
+            unet=self.txt2img.unet,
+            scheduler=self.txt2img.scheduler,
+            safety_checker=None,
+            feature_extractor=None,
+            requires_safety_checker=False,
+        ).to('cuda')
         
-        self.img2img = StableDiffusionControlNetImg2ImgPipeline(
+        self.img2imgcontrolnet = StableDiffusionControlNetImg2ImgPipeline(
             vae=self.txt2img.vae,
             text_encoder=self.txt2img.text_encoder,
             tokenizer=self.txt2img.tokenizer,
@@ -73,34 +96,18 @@ class SD:
             feature_extractor=None,
             requires_safety_checker=False,
         ).to('cuda')
-
-        if controlnet_model_path:
-            self.cn = ControlNetModel.from_pretrained(
-                controlnet_model_path, torch_dtype=self.torch_dtype
-            )
-
-            self.controlnet = StableDiffusionControlNetPipeline.from_pretrained(
-                controlnet_model_path, controlnet=self.cn, vae=self.txt2img.vae,
-                text_encoder=self.txt2img.text_encoder,
-                tokenizer=self.txt2img.tokenizer,
-                unet=self.txt2img.unet,
-                torch_dtype=torch.float16,
-                scheduler=self.txt2img.scheduler,
-                safety_checker=None,
-                feature_extractor=None,
-                requires_safety_checker=False
-            ).to('cuda')
-
-            #annotators...
-            self.depth_estimator = pipeline("depth-estimation")
-
-            #x
-            if self.mo:
-              #self.controlnet.enable_model_cpu_offload()
-              self.controlnet.enable_xformers_memory_efficient_attention()
-        else:
-            self.controlnet = None
         
+        ################ cn
+        
+        self.cn_tile = ControlNetModel.from_pretrained('lllyasviel/control_v11f1e_sd15_tile',
+         torch_dtype=self.torch_dtype).to('cuda')
+         
+        self.cn_depth = ControlNetModel.from_pretrained('lllyasviel/control_v11p_sd15_depth',
+         torch_dtype=self.torch_dtype).to('cuda')
+         
+         #### .enable_xformers_memory_efficient_attention()
+
+        self.controlnet = None
         
           
         self.clean()
