@@ -102,7 +102,7 @@ class SD:
         self.cn_tile = ControlNetModel.from_pretrained('lllyasviel/control_v11f1e_sd15_tile',
          torch_dtype=self.torch_dtype).to('cuda')
          
-        self.cn_depth = ControlNetModel.from_pretrained('lllyasviel/control_v11p_sd15_depth',
+        self.cn_depth = ControlNetModel.from_pretrained('lllyasviel/control_v11f1p_sd15_depth',
          torch_dtype=self.torch_dtype).to('cuda')
          
          #### .enable_xformers_memory_efficient_attention()
