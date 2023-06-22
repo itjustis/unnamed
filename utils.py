@@ -6,41 +6,121 @@ import matplotlib.pyplot as plt
 from PIL import Image, ImageFilter, ImageDraw, ImageOps
 import cv2
 
+def cnet_prepare(controlnets, tile):
+	
+	condition_image = []
+
+	for controlnet in controlnets:
+		if controlnet == 'depth':
+			condition_image.append(p_depth(tile))
+		elif controlnet == 'tile':
+			condition_image.append(p_tile(tile))
+		else:
+			condition_image.append(tile)
+	
+	return condition_image 
+
+def p_depth(image):
+	return
+
+def p_tile(image):
+	return
+
+def process_image(pipe, controlnets, cn_scales, img_extended, original_size, prompt, negative, strength, tile_size=768, shift=0.333,steps=25,scale=7.5,c_scale=0.666):
+	zz = 0
+	img_upscaled = img_extended
+
+	width, height = img_upscaled.size
+	x_steps = int(width // (tile_size * shift))+2
+	y_steps = int(height // (tile_size * shift))+2
+
+	print (img_upscaled.size)
+
+	for i in range(x_steps):
+		for j in range(y_steps):
+			#clear_output()
+
+			left = int(i * tile_size * shift)
+			upper = int(j * tile_size * shift)
+			right = left + tile_size
+			lower = upper + tile_size
+
+			if right <= width and lower <= height:
+				tile = img_upscaled.crop((left, upper, right, lower))
+
+				#if prompt=='':
+				#  nprompt=sd.interrogate(img_upscaled.resize((768,768)),2,4)
+				#else:
+				nprompt=prompt
+
+				#generator=torch.manual_seed(65),
+				condition_image = tile
+		
+				condition_image = cnet_prepare(controlnets, tile)
+
+				tile = pipe.img2imgcontrolnet(prompt=prompt,
+					  negative_prompt= negative,
+					  image=condition_image,
+					  controlnet_conditioning_image=condition_image,
+					  width=tile.size[0],
+					  height=tile.size[1],
+					  strength=strength,
+					  guidance_scale=scale,
+					  controlnet_conditioning_scale=cn_scales,
+					  num_inference_steps=steps,
+					  ).images[0]
+
+				tile = matchc(tile,condition_image)
+				img_upscaled.paste(tile, (left, upper), mask=ImageOps.invert(Image.open('tmask.png')).convert('L'))
+
+
+	img_processed = crop_image( img_upscaled, tile_size//3)
+
+	return img_processed
+
+
+def matchc(x,y):
+  remapped_np = np.array(x)
+  prev_np = np.array(y)
+  matched = color_match(remapped_np, np.array(x))
+  return Image.fromarray(matched)
+
+
 def add_border(image, border):
-    # Define the border color
-    color = (0, 0, 0)  # black
+	# Define the border color
+	color = (0, 0, 0)  # black
 
-    # Create a new image with a border
-    new_image = ImageOps.expand(image, border=border, fill=color)
+	# Create a new image with a border
+	new_image = ImageOps.expand(image, border=border, fill=color)
 
-    return new_image
+	return new_image
 
 
 def crop_image(image, crop_pixels):
-    width, height = image.size
+	width, height = image.size
 
-    # Define the cropping box - left, upper, right, lower
-    crop_box = (crop_pixels, crop_pixels, width - crop_pixels, height - crop_pixels)
+	# Define the cropping box - left, upper, right, lower
+	crop_box = (crop_pixels, crop_pixels, width - crop_pixels, height - crop_pixels)
 
-    # Create a new image by cropping the original image
-    new_image = image.crop(crop_box)
+	# Create a new image by cropping the original image
+	new_image = image.crop(crop_box)
 
-    return new_image
+	return new_image
 
 
 def upscale_image(image_path, upscale_factor=4, padding_size=768):
-    img = Image.open(image_path)
-    display(img)
-    width, height = img.size
-    new_size = (width * upscale_factor, height * upscale_factor)
-    img_upscaled = img.resize(new_size, Image.ANTIALIAS)
+	img = Image.open(image_path)
+	display(img)
+	width, height = img.size
+	new_size = (width * upscale_factor, height * upscale_factor)
+	img_upscaled = img.resize(new_size, Image.ANTIALIAS)
 
 
-    img_extended = add_border(img_upscaled, padding_size//3)
+	img_extended = add_border(img_upscaled, padding_size//3)
 
-    print('img_upscaled.size',img_upscaled.size,'. img_extended.size',img_extended.size)
+	print('img_upscaled.size',img_upscaled.size,'. img_extended.size',img_extended.size)
 
-    return img_extended, img_upscaled.size
+	return img_extended, img_upscaled.size
 
 def color_match(prev_img,color_match_sample):
   prev_img_lab = cv2.cvtColor(prev_img, cv2.COLOR_RGB2LAB)
@@ -49,21 +129,21 @@ def color_match(prev_img,color_match_sample):
   return cv2.cvtColor(matched_lab, cv2.COLOR_LAB2RGB)
 
 def add_noise(tensor, mean=0., std=1.):
-    """
-    Add Gaussian noise to a tensor and clip values to valid range.
+	"""
+	Add Gaussian noise to a tensor and clip values to valid range.
 
-    Args:
-    tensor (torch.Tensor): The input tensor.
-    mean (float): Mean of the Gaussian distribution to generate noise.
-    std (float): Standard deviation of the Gaussian distribution to generate noise.
+	Args:
+	tensor (torch.Tensor): The input tensor.
+	mean (float): Mean of the Gaussian distribution to generate noise.
+	std (float): Standard deviation of the Gaussian distribution to generate noise.
 
-    Returns:
-    torch.Tensor: The tensor with added noise.
-    """
-    noise = torch.randn_like(tensor) * std + mean
-    noisy_tensor = tensor + noise
-    noisy_tensor = torch.clamp(noisy_tensor, tensor.min(), tensor.max())
-    return noisy_tensor
+	Returns:
+	torch.Tensor: The tensor with added noise.
+	"""
+	noise = torch.randn_like(tensor) * std + mean
+	noisy_tensor = tensor + noise
+	noisy_tensor = torch.clamp(noisy_tensor, tensor.min(), tensor.max())
+	return noisy_tensor
 
 def create_gif(image_list, duration, output_path):
 	"""
@@ -113,7 +193,7 @@ def remap_displacement(image, displacement):
 		pass
 	else:
 		raise ValueError('Image should be a PyTorch tensor or a PIL Image')
-    
+	
 	image = image.to(displacement.device)
 
 	# Create a grid to apply the displacement
