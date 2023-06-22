@@ -1,10 +1,13 @@
 import torch
 import numpy as np
 from skimage import exposure
+from transformers import pipeline
 from torchvision.transforms import ToPILImage, ToTensor
 import matplotlib.pyplot as plt
 from PIL import Image, ImageFilter, ImageDraw, ImageOps
 import cv2
+
+depth_estimator = pipeline('depth-estimation')
 
 def cnet_prepare(controlnets, tile):
 	
@@ -14,18 +17,31 @@ def cnet_prepare(controlnets, tile):
 		if controlnet == 'depth':
 			condition_image.append(p_depth(tile))
 		elif controlnet == 'tile':
-			condition_image.append(p_tile(tile))
+			condition_image.append(p_tile(tile, tile.size[0]))
 		else:
 			condition_image.append(tile)
 	
 	return condition_image 
 
-def p_depth(image):
-	return
+def p_depth(init_image):
+	image = depth_estimator(init_image)['depth']
+	image = np.array(image)
+	image = image[:, :, None]
+	image = np.concatenate([image, image, image], axis=2)
+	control_image = Image.fromarray(image)
+	return control_image
 
-def p_tile(image):
-	return
-
+def p_tile(input_image: Image, resolution: int):
+	input_image = input_image.convert("RGB")
+	W, H = input_image.size
+	k = float(resolution) / min(H, W)
+	H *= k
+	W *= k
+	H = int(round(H / 64.0)) * 64
+	W = int(round(W / 64.0)) * 64
+	img = input_image.resize((W, H), resample=Image.LANCZOS)
+	return img
+	
 def process_image(pipe, controlnets, cn_scales, img_extended, original_size, prompt, negative, strength, tile_size=768, shift=0.333,steps=25,scale=7.5,c_scale=0.666):
 	zz = 0
 	img_upscaled = img_extended
