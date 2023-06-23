@@ -79,6 +79,8 @@ def process_tiles(pipe, controlnets, cn_scales, img_upscaled, original_size, pro
 				#generator=torch.manual_seed(65),
 				
 				condition_image = cnet_prepare(controlnets, tile)
+				print('sss')
+				print(condition_image)
 
 				tile = pipe.img2imgcontrolnet(prompt=prompt,
 					  negative_prompt= negative,
