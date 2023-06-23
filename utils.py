@@ -14,9 +14,10 @@ def cnet_prepare(controlnets, tile):
 	condition_image = []
 
 	for controlnet in controlnets:
+		print('controlnet',controlnet)
 		if controlnet == 'depth':
 			condition_image.append(p_depth(tile).resize(tile.size))
-		elif controlnet == 'tile':
+		elif controlnet == 'xtile':
 			condition_image.append(p_tile(tile, tile.size[0]).resize(tile.size))
 		else:
 			condition_image.append(tile)
@@ -80,7 +81,9 @@ def process_tiles(pipe, controlnets, cn_scales, img_upscaled, original_size, pro
 				
 				condition_image = cnet_prepare(controlnets, tile)
 				print('sss')
-				print(condition_image)
+				print(condition_image,cn_scales)
+				
+				itile = tile
 
 				tile = pipe.img2imgcontrolnet(prompt=prompt,
 					  negative_prompt= negative,
@@ -94,7 +97,7 @@ def process_tiles(pipe, controlnets, cn_scales, img_upscaled, original_size, pro
 					  num_inference_steps=steps,
 					  ).images[0]
 
-				tile = matchc(tile,condition_image)
+				tile = matchc(tile,itile)
 				img_upscaled.paste(tile, (left, upper), mask=ImageOps.invert(Image.open('tmask.png')).convert('L'))
 
 
