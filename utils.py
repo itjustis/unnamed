@@ -15,11 +15,14 @@ def cnet_prepare(controlnets, tile):
 
 	for controlnet in controlnets:
 		if controlnet == 'depth':
-			condition_image.append(p_depth(tile).resize((tile.size)))
+			condition_image.append(p_depth(tile).resize(tile.size))
 		elif controlnet == 'tile':
-			condition_image.append(p_tile(tile, tile.size[0]).resize((tile.size)))
+			condition_image.append(p_tile(tile, tile.size[0]).resize(tile.size))
 		else:
 			condition_image.append(tile)
+			
+	for condition in condition_image:
+		print('sz is',condition.size)
 	
 	return condition_image 
 
@@ -74,8 +77,7 @@ def process_tiles(pipe, controlnets, cn_scales, img_upscaled, original_size, pro
 				  prompt=sd.interrogate(img_upscaled.resize((768,768)),2,4)
 				
 				#generator=torch.manual_seed(65),
-				condition_image = tile
-		
+				
 				condition_image = cnet_prepare(controlnets, tile)
 
 				tile = pipe.img2imgcontrolnet(prompt=prompt,
