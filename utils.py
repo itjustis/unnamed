@@ -15,9 +15,9 @@ def cnet_prepare(controlnets, tile):
 
 	for controlnet in controlnets:
 		if controlnet == 'depth':
-			condition_image.append(p_depth(tile))
+			condition_image.append(p_depth(tile).resize((tile.size)))
 		elif controlnet == 'tile':
-			condition_image.append(p_tile(tile, tile.size[0]))
+			condition_image.append(p_tile(tile, tile.size[0]).resize((tile.size)))
 		else:
 			condition_image.append(tile)
 	
