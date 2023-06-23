@@ -44,14 +44,13 @@ def p_tile(input_image: Image, resolution: int):
 
 
 def tile_upscale(image_path,upr,prompt,negative,pipe,controlnets,cn_scales,tile_size=768, shift=0.333,steps=25,scale=7.5,strength=0.666,interrogate=False):
-	img_upscaled ,original_size,upscaled_size= upscale_image(image_path,upr)
+	img_upscaled , original_size , upscaled_size= upscale_image(image_path,upr)
 	img_upscaled = img_upscaled.convert('RGB')
-	result = process_tiles(pipe, controlnets, cn_scales, img_extended, original_size, prompt, negative, strength, tile_size, shift,steps,scale,interrogate)
+	result = process_tiles(pipe, controlnets, cn_scales, img_upscaled, original_size, prompt, negative, strength, tile_size, shift,steps,scale,interrogate)
 	return result
 
-def process_tiles(pipe, controlnets, cn_scales, img_extended, original_size, prompt, negative, strength, tile_size=768, shift=0.333,steps=25,scale=7.5, interrogate=False):
+def process_tiles(pipe, controlnets, cn_scales, img_upscaled, original_size, prompt, negative, strength, tile_size=768, shift=0.333,steps=25,scale=7.5, interrogate=False):
 	zz = 0
-	img_upscaled = img_extended
 
 	width, height = img_upscaled.size
 	x_steps = int(width // (tile_size * shift))+2
