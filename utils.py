@@ -41,8 +41,14 @@ def p_tile(input_image: Image, resolution: int):
 	W = int(round(W / 64.0)) * 64
 	img = input_image.resize((W, H), resample=Image.LANCZOS)
 	return img
-	
-def process_image(pipe, controlnets, cn_scales, img_extended, original_size, prompt, negative, strength, tile_size=768, shift=0.333,steps=25,scale=7.5,c_scale=0.666):
+
+
+def tile_upscale(image_path,upr,prompt,negative,pipe,controlnets,cn_scales,tile_size=768, shift=0.333,steps=25,scale=7.5,c_scale=0.666,interrogate=False):
+	img_upscaled = upscale_image(image_path,upr).convert('RGB')
+	result = process_tiles(pipe, controlnets, cn_scales, img_extended, original_size, prompt, negative, strength, tile_size, shift,steps,scale,c_scale,interrogate)
+	return result
+
+def process_tiles(pipe, controlnets, cn_scales, img_extended, original_size, prompt, negative, strength, tile_size=768, shift=0.333,steps=25,scale=7.5,c_scale=0.666,interrogate=False):
 	zz = 0
 	img_upscaled = img_extended
 
@@ -64,11 +70,9 @@ def process_image(pipe, controlnets, cn_scales, img_extended, original_size, pro
 			if right <= width and lower <= height:
 				tile = img_upscaled.crop((left, upper, right, lower))
 
-				#if prompt=='':
-				#  nprompt=sd.interrogate(img_upscaled.resize((768,768)),2,4)
-				#else:
-				nprompt=prompt
-
+				if interrogate:
+				  prompt=sd.interrogate(img_upscaled.resize((768,768)),2,4)
+				
 				#generator=torch.manual_seed(65),
 				condition_image = tile
 		
