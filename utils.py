@@ -43,12 +43,12 @@ def p_tile(input_image: Image, resolution: int):
 	return img
 
 
-def tile_upscale(image_path,upr,prompt,negative,pipe,controlnets,cn_scales,tile_size=768, shift=0.333,steps=25,scale=7.5,c_scale=0.666,interrogate=False):
-	img_upscaled = upscale_image(image_path,upr).convert('RGB')
-	result = process_tiles(pipe, controlnets, cn_scales, img_extended, original_size, prompt, negative, strength, tile_size, shift,steps,scale,c_scale,interrogate)
+def tile_upscale(image_path,upr,prompt,negative,pipe,controlnets,cn_scales,tile_size=768, shift=0.333,steps=25,scale=7.5,strength=0.666,interrogate=False):
+	img_upscaled ,original_size,upscaled_size= upscale_image(image_path,upr).convert('RGB')
+	result = process_tiles(pipe, controlnets, cn_scales, img_extended, original_size, prompt, negative, strength, tile_size, shift,steps,scale,interrogate)
 	return result
 
-def process_tiles(pipe, controlnets, cn_scales, img_extended, original_size, prompt, negative, strength, tile_size=768, shift=0.333,steps=25,scale=7.5,c_scale=0.666,interrogate=False):
+def process_tiles(pipe, controlnets, cn_scales, img_extended, original_size, prompt, negative, strength, tile_size=768, shift=0.333,steps=25,scale=7.5, interrogate=False):
 	zz = 0
 	img_upscaled = img_extended
 
@@ -140,7 +140,7 @@ def upscale_image(image_path, upscale_factor=4, padding_size=768):
 
 	print('img_upscaled.size',img_upscaled.size,'. img_extended.size',img_extended.size)
 
-	return img_extended, img_upscaled.size
+	return img_extended, (width, height), img_upscaled.size
 
 def color_match(prev_img,color_match_sample):
   prev_img_lab = cv2.cvtColor(prev_img, cv2.COLOR_RGB2LAB)
