@@ -96,7 +96,7 @@ def process_tiles(pipe, controlnets, cn_scales, img_upscaled, original_size, pro
 				img_upscaled.paste(tile, (left, upper), mask=ImageOps.invert(Image.open('tmask.png')).convert('L'))
 
 
-	img_processed = crop_image( img_upscaled, tile_size//3)
+	img_processed = crop_image( img_upscaled, tile_size//6)
 
 	return img_processed
 
