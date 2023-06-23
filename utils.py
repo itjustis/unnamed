@@ -14,16 +14,13 @@ def cnet_prepare(controlnets, tile):
 	condition_image = []
 
 	for controlnet in controlnets:
-		print('controlnet',controlnet)
+		
 		if controlnet == 'depth':
 			condition_image.append(p_depth(tile).resize(tile.size))
-		elif controlnet == 'xtile':
+		elif controlnet == 'tile':
 			condition_image.append(p_tile(tile, tile.size[0]).resize(tile.size))
 		else:
 			condition_image.append(tile)
-			
-	for condition in condition_image:
-		print('sz is',condition.size)
 	
 	return condition_image 
 
@@ -87,7 +84,7 @@ def process_tiles(pipe, controlnets, cn_scales, img_upscaled, original_size, pro
 
 				tile = pipe.img2imgcontrolnet(prompt=prompt,
 					  negative_prompt= negative,
-					  image=condition_image,
+					  image=tile,
 					  controlnet_conditioning_image=condition_image,
 					  width=tile.size[0],
 					  height=tile.size[1],
