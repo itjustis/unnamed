@@ -31,9 +31,9 @@ if not os.path.exists(temp_folder):
 
 available_models = [
 	#'CompVis/stable-diffusion-v1-4',
-	'stablediffusionapi/epicrealism'
+	#'stablediffusionapi/epicrealism'
 	#'runwayml/stable-diffusion-v1-5',
-	#'dreamlike-art/dreamlike-photoreal-2.0',
+	'dreamlike-art/dreamlike-photoreal-2.0',
 	#''
 	]
 
