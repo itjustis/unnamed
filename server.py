@@ -277,6 +277,11 @@ def process_job(job):
 		divider = ''
 			
 		log('variations: '+str(variations))
+		
+		if args['prompt'] == "":
+			image = Image.open(args['img_path']).convert('RGB')
+			args['prompt'] = sd.interrogate(image, min_flavors=2, max_flavors=4)
+			
 			
 		for i in range(variations):
 			if variations>1 and i!=(variations-1):
@@ -287,9 +292,6 @@ def process_job(job):
 			if task == 'imagine':
 				result = imagine(args)
 			elif task == 'overpaint':
-				if args['prompt'] == "":
-					image = Image.open(args['img_path']).convert('RGB')
-					args['prompt'] = sd.interrogate(image, min_flavors=2, max_flavors=4)
 				result = overpaint(args)
 			elif task == 'inpaint':
 				result = inpaint(args)
