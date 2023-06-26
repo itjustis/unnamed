@@ -297,7 +297,7 @@ def process_job(job):
 			job_status[job['job_id']] = {"status": "failed"}
 	except Exception as e:
 		print(f"Error processing job {job['job_id']}: {e}")
-		job_status[job['job_id']] = {"status": "failed", "error": }
+		job_status[job['job_id']] = {"status": "failed", "error": str(e)}
 
 if __name__ == "__main__":
 	clear()
