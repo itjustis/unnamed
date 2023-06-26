@@ -257,43 +257,47 @@ def controlnet(args):
 	
 # Function to process jobs
 def process_job(job):
-	task = job['task']
-	args = job['args']
-	job_id = job["job_id"]
-	job_status[job_id]['status'] = "processing"
-	variations = int(args['variations'])
-	
-	result = None
-	b64_result = ''
-	divider = ''
+	try:
+		task = job['task']
+		args = job['args']
+		job_id = job["job_id"]
+		job_status[job_id]['status'] = "processing"
+		variations = int(args['variations'])
 		
-	log('variations: '+str(variations))
-		
-	for i in range(variations):
-		if variations>1 and i!=(variations-1):
-				   divider = ','
-		else:
-				   divider = ''
-		log('generating image #'+str(i))
-		if task == 'imagine':
-			result = imagine(args)
-		elif task == 'overpaint':
-			if args['prompt'] == "":
-				image = Image.open(args['img_path']).convert('RGB')
-				args['prompt'] = sd.interrogate(image, min_flavors=2, max_flavors=4)
-			result = overpaint(args)
-		elif task == 'inpaint':
-			result = inpaint(args)
-		elif task == 'controlnet':
-			result = controlnet(args)
+		result = None
+		b64_result = ''
+		divider = ''
 			
-		b64_result+=image_to_base64(result)+divider
-
-	if result is not None:
-		
-		job_status[job['job_id']] = {"status": "completed", "result": b64_result}
-	else:
-		job_status[job['job_id']] = {"status": "failed"}
+		log('variations: '+str(variations))
+			
+		for i in range(variations):
+			if variations>1 and i!=(variations-1):
+				   	divider = ','
+			else:
+				   	divider = ''
+			log('generating image #'+str(i))
+			if task == 'imagine':
+				result = imagine(args)
+			elif task == 'overpaint':
+				if args['prompt'] == "":
+					image = Image.open(args['img_path']).convert('RGB')
+					args['prompt'] = sd.interrogate(image, min_flavors=2, max_flavors=4)
+				result = overpaint(args)
+			elif task == 'inpaint':
+				result = inpaint(args)
+			elif task == 'controlnet':
+				result = controlnet(args)
+				
+			b64_result+=image_to_base64(result)+divider
+	
+		if result is not None:
+			
+			job_status[job['job_id']] = {"status": "completed", "result": b64_result}
+		else:
+			job_status[job['job_id']] = {"status": "failed"}
+	except Exception as e:
+		print(f"Error processing job {job['job_id']}: {e}")
+		job_status[job['job_id']] = {"status": "failed", "error": 
 
 if __name__ == "__main__":
 	clear()
