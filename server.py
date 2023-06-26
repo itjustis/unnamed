@@ -5,7 +5,7 @@ from flask import Flask, request, jsonify
 from pyngrok import ngrok, conf
 from PIL import Image
 from IPython import display as disp
-
+from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_controlnet import MultiControlNetModel
 from sd import SD, download_models
 
 
@@ -227,7 +227,7 @@ def overpaint(args):
 				cnets.append(eval("sd.cn_"+str(args['modules'][cnet]['mode'])))
 				cscales.append(float(args['modules'][cnet]['scale']))
 			
-			sd.img2imgcontrolnet.controlnet = cnets
+			sd.img2imgcontrolnet.controlnet = MultiControlNetModel(cnets)
 		
 		return sd.img2imgcontrolnet(
 			args['prompt'],
