@@ -38,7 +38,7 @@ available_models = [
 
 ############# xxx ##############
 def clear():
-    disp.clear_output()
+	disp.clear_output()
 def init(models):
 	download_models(models,models_path)
 	sd = SD( models_path, models[0], None)
@@ -57,22 +57,22 @@ available_models = ['model1', 'model2', 'model3']
 
 
 def save_image_from_b64(b64_string, folder, filename):
-    print(b64_string)
-    img_data = base64.urlsafe_b64decode(b64_string)
-    img_file_path = os.path.join(folder, filename)
-    
-    # Save the raw data to a file for debugging
-    with open(img_file_path + ".raw", "wb") as raw_file:
-        raw_file.write(img_data)
-    
-    try:
-        img = Image.open(BytesIO(img_data))
-        img_path = os.path.join(folder, filename)
-        img.save(img_path)
-        return img_path
-    except Exception as e:
-        print("Exception when trying to open image: ", e)
-        return None
+	print(b64_string)
+	img_data = base64.urlsafe_b64decode(b64_string)
+	img_file_path = os.path.join(folder, filename)
+	
+	# Save the raw data to a file for debugging
+	with open(img_file_path + ".raw", "wb") as raw_file:
+		raw_file.write(img_data)
+	
+	try:
+		img = Image.open(BytesIO(img_data))
+		img_path = os.path.join(folder, filename)
+		img.save(img_path)
+		return img_path
+	except Exception as e:
+		print("Exception when trying to open image: ", e)
+		return None
 
 	
 def log(message):
@@ -203,23 +203,49 @@ def image_to_base64(img):
 def imagine(args):
 	return sd.txt2img(
 		args['prompt'],
-		width=args['w'],
-		height=args['h'],
+		width=args['width'],
+		height=args['height'],
 		num_inference_steps=int(args['steps']),
 		guidance_scale=float(args['scale']),
 		negative_prompt=args['negative_prompt']
 	)[0][0]
+	
 
 def overpaint(args):
-	image = Image.open(args['img_path']).convert('RGB')
-	return sd.img2img(
-		args['prompt'],
-		image,
-		num_inference_steps=int(args['steps']),
-		guidance_scale=float(args['scale']),
-		negative_prompt=args['negative_prompt'],
-		strength=float(args['strength'])
-	)[0][0]
+	image = Image.open(args['img_path']).convert('RGB').resize(args['width'],args['height'])
+	
+	if len(args['modules']) > 0 :
+		cnets = []
+		cscales = []
+		for cnet in args['modules']:
+			cnets.append(eval("sd.cn_"+cnet['mode']))
+			cscales.append(eval("sd.cn_"+cnet['scale']))
+		
+		sd.img2imgcontrolnet.controlnet = cnets
+			
+		return sd.img2imgcontrolnet(
+			args['prompt'],
+			image,
+			width=args['width'],
+			heigh=args['height'],
+			controlnet_conditioning_image=image,
+			num_inference_steps=int(args['steps']),
+			guidance_scale=float(args['scale']),
+			negative_prompt=args['negative_prompt'],
+			strength=float(args['strength']),
+			controlnet_conditioning_scale=cscales
+		)[0][0]
+	else:
+		return sd.img2img(
+			args['prompt'],
+			image,
+			width=args['width'],
+			heigh=args['height'],
+			num_inference_steps=int(args['steps']),
+			guidance_scale=float(args['scale']),
+			negative_prompt=args['negative_prompt'],
+			strength=float(args['strength'])
+		)[0][0]
 	
 def inpaint(args):
 	return None
@@ -243,9 +269,9 @@ def process_job(job):
 		
 	for i in range(variations):
 		if variations>1 and i!=(variations-1):
-			       divider = ','
+				   divider = ','
 		else:
-			       divider = ''
+				   divider = ''
 		log('generating image #'+str(i))
 		if task == 'imagine':
 			result = imagine(args)
@@ -268,6 +294,6 @@ def process_job(job):
 		job_status[job['job_id']] = {"status": "failed"}
 
 if __name__ == "__main__":
-    clear()
-    log(public_url)
-    app.run()
+	clear()
+	log(public_url)
+	app.run()
