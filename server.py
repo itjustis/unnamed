@@ -7,7 +7,7 @@ from PIL import Image
 from IPython import display as disp
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_controlnet import MultiControlNetModel
 from sd import SD, download_models
-
+from utils import cnet_prepare
 
 job_queue = queue.Queue()
 job_status = {}
@@ -213,26 +213,33 @@ def imagine(args):
 
 def overpaint(args):
 	image = Image.open(args['img_path']).convert('RGB').resize((args['width'],args['height']))
+	cnets_n=[]
 	
 	if len(args['modules']) > 0:
 		if len(args['modules']) == 1:
-			cnets = eval("sd.cn_"+str(args['modules'][cnet]['mode']))
-			sd.img2imgcontrolnet.controlnet = cnet 
-			cscales = (float(args['modules'][cnet]['scale']))
-			
+			for cnet in args['modules']:
+				cnets = eval("sd.cn_"+str(args['modules'][cnet]['mode']))
+				sd.img2imgcontrolnet.controlnet =cnets
+				cscales = (float(args['modules'][cnet]['scale']))
+				cnets_n.append(str(args['modules'][cnet]['mode']))
+				
 		else:
 			cnets = []
+			
 			cscales = []
 			for cnet in args['modules']:
 				cnets.append(eval("sd.cn_"+str(args['modules'][cnet]['mode'])))
 				cscales.append(float(args['modules'][cnet]['scale']))
+				cnets_n.append(str(args['modules'][cnet]['mode']))
 			
 			sd.img2imgcontrolnet.controlnet = MultiControlNetModel(cnets)
+		
+		cnet_images= cnet_prepare(cnets_n,image)
 		
 		return sd.img2imgcontrolnet(
 			args['prompt'],
 			image,
-			controlnet_conditioning_image=image,
+			controlnet_conditioning_image=cnet_images,
 			num_inference_steps=int(args['steps']),
 			guidance_scale=float(args['scale']),
 			negative_prompt=args['negative_prompt'],
