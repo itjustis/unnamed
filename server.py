@@ -226,8 +226,6 @@ def overpaint(args):
 		return sd.img2imgcontrolnet(
 			args['prompt'],
 			image,
-			width=args['width'],
-			heigh=args['height'],
 			controlnet_conditioning_image=image,
 			num_inference_steps=int(args['steps']),
 			guidance_scale=float(args['scale']),
@@ -239,8 +237,6 @@ def overpaint(args):
 		return sd.img2img(
 			args['prompt'],
 			image,
-			width=args['width'],
-			heigh=args['height'],
 			num_inference_steps=int(args['steps']),
 			guidance_scale=float(args['scale']),
 			negative_prompt=args['negative_prompt'],
