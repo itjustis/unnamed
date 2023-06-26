@@ -218,8 +218,8 @@ def overpaint(args):
 		cnets = []
 		cscales = []
 		for cnet in args['modules']:
-			cnets.append(eval("sd.cn_"+args['modules'][cnet]['mode']))
-			cscales.append(eval("sd.cn_"+args['modules'][cnet]['scale']))
+			cnets.append(eval("sd.cn_"+str(args['modules'][cnet]['mode'])))
+			cscales.append(eval("sd.cn_"+str(args['modules'][cnet]['scale'])))
 		
 		sd.img2imgcontrolnet.controlnet = cnets
 	
