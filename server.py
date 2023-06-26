@@ -30,9 +30,9 @@ if not os.path.exists(temp_folder):
 	os.makedirs(temp_folder)
 
 available_models = [
-	'CompVis/stable-diffusion-v1-4',
+	#'CompVis/stable-diffusion-v1-4',
 	#'runwayml/stable-diffusion-v1-5',
-	#'dreamlike-art/dreamlike-photoreal-2.0',
+	'dreamlike-art/dreamlike-photoreal-2.0',
 	#''
 	]
 
