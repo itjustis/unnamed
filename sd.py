@@ -20,7 +20,7 @@ from diffusers import (
     DPMSolverMultistepScheduler,
     UniPCMultistepScheduler,
 )
-from unnamed.stable_diffusion_controlnet_img2img import StableDiffusionControlNetImg2ImgPipeline
+from stable_diffusion_controlnet_img2img import StableDiffusionControlNetImg2ImgPipeline
 from huggingface_hub import snapshot_download
 from clip_interrogator import Config, Interrogator
 import tomesd
@@ -99,7 +99,7 @@ class SD:
         
         ################ cn
         
-        self.cn_tile = ControlNetModel.from_pretrained('lllyasviel/control_v11f1e_sd15_tile',
+        self.cn_content = ControlNetModel.from_pretrained('lllyasviel/control_v11f1e_sd15_tile',
          torch_dtype=self.torch_dtype).to('cuda')
          
         self.cn_depth = ControlNetModel.from_pretrained('lllyasviel/control_v11f1p_sd15_depth',
