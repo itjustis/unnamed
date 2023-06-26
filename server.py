@@ -212,7 +212,7 @@ def imagine(args):
 	
 
 def overpaint(args):
-	image = Image.open(args['img_path']).convert('RGB').resize(args['width'],args['height'])
+	image = Image.open(args['img_path']).convert('RGB').resize((args['width'],args['height']))
 	
 	if len(args['modules']) > 0 :
 		cnets = []
