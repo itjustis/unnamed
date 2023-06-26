@@ -215,14 +215,20 @@ def overpaint(args):
 	image = Image.open(args['img_path']).convert('RGB').resize((args['width'],args['height']))
 	
 	if len(args['modules']) > 0:
-		cnets = []
-		cscales = []
-		for cnet in args['modules']:
-			cnets.append(eval("sd.cn_"+str(args['modules'][cnet]['mode'])))
-			cscales.append(float(args['modules'][cnet]['scale']))
+		if len(args['modules']) == 1:
+			cnets = eval("sd.cn_"+str(args['modules'][cnet]['mode']))
+			sd.img2imgcontrolnet.controlnet = cnet 
+			cscales = (float(args['modules'][cnet]['scale']))
+			
+		else:
+			cnets = []
+			cscales = []
+			for cnet in args['modules']:
+				cnets.append(eval("sd.cn_"+str(args['modules'][cnet]['mode'])))
+				cscales.append(float(args['modules'][cnet]['scale']))
+			
+			sd.img2imgcontrolnet.controlnet = cnets
 		
-		sd.img2imgcontrolnet.controlnet = cnets
-	
 		return sd.img2imgcontrolnet(
 			args['prompt'],
 			image,
