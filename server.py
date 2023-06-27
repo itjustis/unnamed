@@ -189,7 +189,7 @@ def process_image(args, job_id):
 
 def create_job(args, job_id, img_path, task):
 	"""Create a job object."""
-	args['img_path'] = img_path
+	args['img_path'] = str(img_path)
 	job = {
 		"job_id": job_id,
 		"task": task,
@@ -219,6 +219,7 @@ def imagine(args):
 	
 
 def overpaint(args):
+	log ('overpainting with image at '+args['img_path'])
 	image = Image.open(args['img_path']).convert('RGB').resize((args['width'],args['height']))
 	cnets_n=[]
 	
@@ -291,9 +292,9 @@ def process_job(job):
 			
 		for i in range(variations):
 			if variations>1 and i!=(variations-1):
-				   	divider = ','
+					   divider = ','
 			else:
-				   	divider = ''
+					   divider = ''
 			log('generating image #'+str(i))
 			if task == 'imagine':
 				result = imagine(args)
@@ -304,7 +305,7 @@ def process_job(job):
 			elif task == 'controlnet':
 				result = controlnet(args)
 				
-			b64_result+=image_to_base64(result)+divider
+			b64_result+=image_to_base64(result.convert('RGB'))+divider
 	
 		if result is not None:
 			
