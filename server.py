@@ -78,20 +78,26 @@ def save_image_from_b64(b64_string, folder, filename):
 	
 def log(message):
 	if app_args.log:
-		print('####################################')
-		print(message)
-		print('####################################')
-	
-def worker():
-	while True:
-		job = job_queue.get()
-		if job is None:
-			break
-		process_job(job)
+		print( '---->' + str(message))
 		
+	
+from threading import Thread, Lock
+
+def worker(lock):
+	while True:
+		with lock:
+			job = job_queue.get()
+			if job is None:
+				break
+			process_job(job)
+
+# Create a lock
+lock = Lock()
+
 # Start the worker thread
-worker_thread = Thread(target=worker)
+worker_thread = Thread(target=worker, args=(lock,))
 worker_thread.start()
+
 
 # init
 if app_args.token:
