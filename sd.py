@@ -20,6 +20,7 @@ from diffusers import (
     DPMSolverMultistepScheduler,
     UniPCMultistepScheduler,
 )
+from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_controlnet import MultiControlNetModel
 from stable_diffusion_controlnet_img2img import StableDiffusionControlNetImg2ImgPipeline
 from huggingface_hub import snapshot_download
 from clip_interrogator import Config, Interrogator
@@ -49,13 +50,13 @@ class SD:
         self.ci = Interrogator(Config(clip_model_name="ViT-L-14/openai"))
 
         #self.UniPCM = UniPCMultistepScheduler.from_config(pipe.scheduler.config)
-        self.ddpm = DDPMScheduler.from_pretrained(model_path, subfolder="scheduler")
-        self.ddim = DDIMScheduler.from_pretrained(model_path, subfolder="scheduler")
-        self.pndm = PNDMScheduler.from_pretrained(model_path, subfolder="scheduler")
-        self.lms = LMSDiscreteScheduler.from_pretrained(model_path, subfolder="scheduler")
-        self.euler_a = EulerAncestralDiscreteScheduler.from_pretrained(model_path, subfolder="scheduler")
-        self.euler = EulerDiscreteScheduler.from_pretrained(model_path, subfolder="scheduler")
-        self.dpm = DPMSolverMultistepScheduler.from_pretrained(model_path, subfolder="scheduler")
+        #self.ddpm = DDPMScheduler.from_pretrained(model_path, subfolder="scheduler")
+        #self.ddim = DDIMScheduler.from_pretrained(model_path, subfolder="scheduler")
+        #self.pndm = PNDMScheduler.from_pretrained(model_path, subfolder="scheduler")
+        #self.lms = LMSDiscreteScheduler.from_pretrained(model_path, subfolder="scheduler")
+        #self.euler_a = EulerAncestralDiscreteScheduler.from_pretrained(model_path, subfolder="scheduler")
+        #self.euler = EulerDiscreteScheduler.from_pretrained(model_path, subfolder="scheduler")
+        #self.dpm = DPMSolverMultistepScheduler.from_pretrained(model_path, subfolder="scheduler")
         self.unipcm = UniPCMultistepScheduler.from_pretrained(model_path, subfolder="scheduler")
         self.init_models(model_path,controlnet_model_path)
         self.interrogate = self.ci.interrogate
@@ -65,7 +66,7 @@ class SD:
         self.txt2img = StableDiffusionPipeline.from_pretrained(
             model_path, torch_dtype=self.torch_dtype
         ).to('cuda')
-        self.txt2img.scheduler = self.euler_a
+        self.txt2img.scheduler = self.unipcm
         
         tomesd.apply_patch(self.txt2img, ratio=0.5)
         
