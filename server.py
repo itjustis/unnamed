@@ -305,6 +305,8 @@ def process_job(job):
 			elif task == 'controlnet':
 				result = controlnet(args)
 				
+			result.save(temp_folder+'/out_'+str(i)+'_'+job_id+'.png')
+				
 			b64_result+=image_to_base64(result.convert('RGB'))+divider
 	
 		if result is not None:
