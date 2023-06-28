@@ -105,6 +105,11 @@ class SD:
          
         self.cn_depth = ControlNetModel.from_pretrained('lllyasviel/control_v11f1p_sd15_depth',
          torch_dtype=self.torch_dtype).to('cuda')
+
+        self.cn_scribble = ControlNetModel.from_pretrained('lllyasviel/control_v11p_sd15_scribble',
+         torch_dtype=self.torch_dtype).to('cuda')
+
+        
          
          #### .enable_xformers_memory_efficient_attention()
 
