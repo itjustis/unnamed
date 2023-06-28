@@ -222,6 +222,7 @@ def overpaint(args):
 	log ('overpainting with image at '+args['img_path'])
 	image = Image.open(args['img_path']).convert('RGB').resize((args['width'],args['height']))
 	cnets_n=[]
+	cnets_p=[]
 	
 	if len(args['modules']) > 0:
 		if len(args['modules']) == 1:
@@ -230,6 +231,7 @@ def overpaint(args):
 				sd.img2imgcontrolnet.controlnet =cnets
 				cscales = (float(args['modules'][cnet]['scale']))
 				cnets_n.append(str(args['modules'][cnet]['mode']))
+				cnets_p.append(args['modules'][cnet]['prepare'])
 				
 		else:
 			cnets = []
@@ -239,10 +241,11 @@ def overpaint(args):
 				cnets.append(eval("sd.cn_"+str(args['modules'][cnet]['mode'])))
 				cscales.append(float(args['modules'][cnet]['scale']))
 				cnets_n.append(str(args['modules'][cnet]['mode']))
+				cnets_p.append(args['modules'][cnet]['prepare'])
 			
 			sd.img2imgcontrolnet.controlnet = MultiControlNetModel(cnets)
 		
-		cnet_images= cnet_prepare(cnets_n,image)
+		cnet_images= cnet_prepare(cnets_n,cnets_p,image)
 		
 		return sd.img2imgcontrolnet(
 			args['prompt'],
