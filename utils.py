@@ -6,25 +6,52 @@ from torchvision.transforms import ToPILImage, ToTensor
 import matplotlib.pyplot as plt
 from PIL import Image, ImageFilter, ImageDraw, ImageOps
 import cv2
+from controlnet_aux import  HEDdetector
 
-depth_estimator = pipeline('depth-estimation')
 
-def cnet_prepare(controlnets, tile):
+
+def cnet_prepare(controlnets,cnets_p, tile):
 	
 	condition_image = []
 
-	for controlnet in controlnets:
-		
-		if controlnet == 'depth':
-			condition_image.append(p_depth(tile).resize(tile.size))
-		elif controlnet == 'tile':
-			condition_image.append(p_tile(tile, tile.size[0]).resize(tile.size))
-		else:
+	for controlnet, prepare in zip(controlnets,cnets_p):
+		print ('prepare for', controlnet, 'is', prepare)
+
+		if prepare:
 			condition_image.append(tile)
+		else:
+			if controlnet == 'depth':
+				condition_image.append(p_depth(tile).resize(tile.size))
+			elif controlnet == 'tile':
+				condition_image.append(p_tile(tile, tile.size[0]).resize(tile.size))
+			elif controlnet == 'canny_edge':
+				condition_image.append(p_canny(tile).resize(tile.size))
+			elif controlnet == 'soft_edge':
+				condition_image.append(p_canny(tile).resize(tile.size))
+			else:
+				condition_image.append(tile)
 	
-	return condition_image 
+	return condition_image
+	
+def p_soft(image):
+	processor = HEDdetector.from_pretrained('lllyasviel/Annotators')
+	control_image = processor(image, safe=True)
+	return control_image
+	
+def p_canny(image):
+	image = np.array(image)	
+	low_threshold = 100
+	high_threshold = 200	
+	image = cv2.Canny(image, low_threshold, high_threshold)
+	image = image[:, :, None]
+	image = np.concatenate([image, image, image], axis=2)
+	control_image = Image.fromarray(image)
+	return control_image
+
 
 def p_depth(init_image):
+	depth_estimator = pipeline('depth-estimation')
+
 	image = depth_estimator(init_image)['depth']
 	image = np.array(image)
 	image = image[:, :, None]
