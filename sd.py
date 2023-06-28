@@ -109,7 +109,7 @@ class SD:
         self.cn_scribble = ControlNetModel.from_pretrained('lllyasviel/control_v11p_sd15_scribble',
          torch_dtype=self.torch_dtype).to('cuda')
 
-        self.cn_canny_edge = ControlNetModel.from_pretrained('control_v11p_sd15_canny',
+        self.cn_canny_edge = ControlNetModel.from_pretrained('lllyasviel/control_v11p_sd15_canny',
          torch_dtype=self.torch_dtype).to('cuda')
 
         self.cn_soft_edge = ControlNetModel.from_pretrained('lllyasviel/control_v11p_sd15_softedge',
