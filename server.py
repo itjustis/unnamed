@@ -78,7 +78,7 @@ def save_image_from_b64(b64_string, folder, filename):
 	
 def log(message):
 	if app_args.log:
-		print(str(message))
+		print( str(message))
 		
 	
 from threading import Thread, Lock
@@ -253,6 +253,8 @@ def overpaint(args,variation):
 	image = Image.open(args['img_path']).convert('RGB').resize(sz)
 	cnets_n=[]
 	cnets_p=[]
+	cnets = []
+	cscales = []
 	cnet_images=args['cnet_images']
 	
 	
@@ -266,9 +268,9 @@ def overpaint(args,variation):
 				cnets_p.append(args['modules'][cnet]['prepare'])
 						
 		else:
-			cnets = []
 			
-			cscales = []
+			
+			
 			for cnet in args['modules']:
 				cnets.append(eval("sd.cn_"+str(args['modules'][cnet]['mode'])))
 				cscales.append(float(args['modules'][cnet]['scale']))
@@ -283,8 +285,13 @@ def overpaint(args,variation):
 			
 		cnet_image_pils = []
 		
+		log('okay')
+		
 		for img in cnet_images:
 			cnet_image_pils.append(Image.open(img));
+			
+			
+		log('---generating with',cnets,int(args['steps']),float(args['scale']),args['negative_prompt'],float(args['strength'],cscales)
 		
 		
 		return sd.img2imgcontrolnet(
@@ -297,6 +304,7 @@ def overpaint(args,variation):
 			strength=float(args['strength']),
 			controlnet_conditioning_scale=cscales
 		)[0][0]
+		log('oops')
 	else:
 		return sd.img2img(
 			args['prompt'],
@@ -348,6 +356,8 @@ def process_job(job):
 				result = inpaint(args)
 			elif task == 'controlnet':
 				result = controlnet(args)
+				
+			log('saving result')
 				
 			result.save(temp_folder+'/out_'+str(i)+'_'+job_id+'.png')
 				
