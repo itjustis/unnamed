@@ -25,8 +25,10 @@ def cnet_prepare(controlnets,cnets_p, images, sz):
 				image = p_canny(image)
 			elif controlnet == 'soft_edge':
 				image = p_canny(image)
+				
+			print(image,'saving')
 			
-			image.resize(sz).save(image_path)
+			image.resize(sz).convert('RGB').save(image_path)
 	
 def p_shuffle(image):
 	shuffle_processor = ContentShuffleDetector()
