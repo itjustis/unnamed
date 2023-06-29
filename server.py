@@ -278,6 +278,7 @@ def overpaint(args,variation):
 			sd.img2imgcontrolnet.controlnet = MultiControlNetModel(cnets)
 		
 		if(variation==0):
+			print(cnets_n,cnets_p,cnet_images,sz)
 			cnet_prepare(cnets_n,cnets_p,cnet_images,sz)
 			
 		cnet_image_pils = []
