@@ -78,7 +78,7 @@ def save_image_from_b64(b64_string, folder, filename):
 	
 def log(message):
 	if app_args.log:
-		print( '---->' + str(message))
+		print(str(message))
 		
 	
 from threading import Thread, Lock
