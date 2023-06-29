@@ -8,6 +8,8 @@ from PIL import Image, ImageFilter, ImageDraw, ImageOps
 import cv2
 from controlnet_aux import  HEDdetector, ContentShuffleDetector
 
+
+
 def cnet_prepare(controlnets,cnets_p, images, sz):
 	
 	for controlnet, prepare,image_path in zip(controlnets,cnets_p,images):
@@ -18,7 +20,7 @@ def cnet_prepare(controlnets,cnets_p, images, sz):
 			if controlnet == 'depth':
 				image = p_depth(image)
 			elif controlnet == 'tile':
-				image = p_tile(image, sz.size[0]))
+				image = p_tile(image, sz.size[0])
 			elif controlnet == 'canny_edge':
 				image = p_canny(image)
 			elif controlnet == 'soft_edge':
