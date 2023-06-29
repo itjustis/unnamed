@@ -161,6 +161,16 @@ def create_task(task):
 	# Process the image if the task is not 'imagine'.
 	if task != 'imagine':
 		img_path = process_image(args, job_id)
+		
+	cnet_images=[]
+	for cnet in args['modules']:
+		if args['modules'][cnet].ref.image:
+			filename = process_cnet_image(args['modules'][cnet].ref.image,cnet)
+			cnet_images.append(Image.open(filename))
+		else:
+			cnet_images.append(Image.open(img_path))
+			
+	args['cnet_images'] = cnet_images;
 
 	# Create a job object and put it in the queue.
 	job = create_job(args, job_id, img_path, task)
@@ -170,6 +180,23 @@ def create_task(task):
 
 	return jsonify(job_status[job_id])
 
+def process_cnet_image(b64_string,filename):
+	"""Decode the image from base64 and save it."""
+	
+	f = BytesIO()
+	f.write(base64.b64decode(b64_string))
+	f.seek(0)
+	
+	img = Image.open(f)
+	
+	#if args.get('inpaint') != "true":
+	#	img = img.convert("RGB")
+	
+	filename = f"temp/{filename}.png"
+	img.save(filename)
+	
+	return filename
+	
 def process_image(args, job_id):
 	"""Decode the image from base64 and save it."""
 	b64_string = args['initImage']
@@ -223,6 +250,8 @@ def overpaint(args):
 	image = Image.open(args['img_path']).convert('RGB').resize((args['width'],args['height']))
 	cnets_n=[]
 	cnets_p=[]
+	cnet_images=args['cnet_images']
+	
 	
 	if len(args['modules']) > 0:
 		if len(args['modules']) == 1:
@@ -232,7 +261,7 @@ def overpaint(args):
 				cscales = (float(args['modules'][cnet]['scale']))
 				cnets_n.append(str(args['modules'][cnet]['mode']))
 				cnets_p.append(args['modules'][cnet]['prepare'])
-				
+						
 		else:
 			cnets = []
 			
@@ -242,10 +271,11 @@ def overpaint(args):
 				cscales.append(float(args['modules'][cnet]['scale']))
 				cnets_n.append(str(args['modules'][cnet]['mode']))
 				cnets_p.append(args['modules'][cnet]['prepare'])
+				
 			
 			sd.img2imgcontrolnet.controlnet = MultiControlNetModel(cnets)
 		
-		cnet_images= cnet_prepare(cnets_n,cnets_p,image)
+		cnet_images= cnet_prepare(cnets_n,cnets_p,cnet_images)
 		
 		return sd.img2imgcontrolnet(
 			args['prompt'],
@@ -292,6 +322,7 @@ def process_job(job):
 			image = Image.open(args['img_path']).convert('RGB')
 			args['prompt'] = sd.interrogate(image, min_flavors=2, max_flavors=4)
 			
+		
 			
 		for i in range(variations):
 			if variations>1 and i!=(variations-1):
