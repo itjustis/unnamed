@@ -164,11 +164,13 @@ def create_task(task):
 		
 	cnet_images=[]
 	for cnet in args['modules']:
+		filename = f"temp/{cnet}.png";
 		if args['modules'][cnet].ref.image:
-			filename = process_cnet_image(args['modules'][cnet].ref.image,cnet)
-			cnet_images.append(Image.open(filename))
+			filename = process_cnet_image(args['modules'][cnet].ref.image,filename)
+			cnet_images.append(filename)
 		else:
-			cnet_images.append(Image.open(img_path))
+			Image.open(img_path).save(filename)
+			cnet_images.append(filename)
 			
 	args['cnet_images'] = cnet_images;
 
@@ -192,7 +194,7 @@ def process_cnet_image(b64_string,filename):
 	#if args.get('inpaint') != "true":
 	#	img = img.convert("RGB")
 	
-	filename = f"temp/{filename}.png"
+	
 	img.save(filename)
 	
 	return filename
@@ -247,7 +249,8 @@ def imagine(args):
 
 def overpaint(args):
 	log ('overpainting with image at '+args['img_path'])
-	image = Image.open(args['img_path']).convert('RGB').resize((args['width'],args['height']))
+	sz = (args['width'],args['height'])
+	image = Image.open(args['img_path']).convert('RGB').resize(sz)
 	cnets_n=[]
 	cnets_p=[]
 	cnet_images=args['cnet_images']
@@ -271,11 +274,17 @@ def overpaint(args):
 				cscales.append(float(args['modules'][cnet]['scale']))
 				cnets_n.append(str(args['modules'][cnet]['mode']))
 				cnets_p.append(args['modules'][cnet]['prepare'])
-				
 			
 			sd.img2imgcontrolnet.controlnet = MultiControlNetModel(cnets)
 		
-		cnet_images= cnet_prepare(cnets_n,cnets_p,cnet_images)
+		if(variation==0):
+			cnet_prepare(cnets_n,cnets_p,cnet_images,sz)
+			
+		cnet_image_pils = []
+		
+		for img in cnet_images:
+			cnet_image_pils.append(Image.open(img));
+		
 		
 		return sd.img2imgcontrolnet(
 			args['prompt'],
