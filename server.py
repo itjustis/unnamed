@@ -165,8 +165,8 @@ def create_task(task):
 	cnet_images=[]
 	for cnet in args['modules']:
 		filename = f"temp/{cnet}.png";
-		if args['modules'][cnet].ref.image:
-			filename = process_cnet_image(args['modules'][cnet].ref.image,filename)
+		if args['modules'][cnet]['ref']['image']:
+			filename = process_cnet_image(args['modules'][cnet]['ref']['image'],filename)
 			cnet_images.append(filename)
 		else:
 			Image.open(img_path).save(filename)
