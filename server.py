@@ -154,7 +154,7 @@ def create_task(task):
 
 	# Log request data for debugging.
 	log(f"Task: {task}")
-	log(f"Args: {args}")
+	
 
 	img_path = None
 
@@ -292,7 +292,8 @@ def overpaint(args,variation):
 			
 			
 		print('---generating with',cnets,int(args['steps']),float(args['scale']),args['negative_prompt'],float(args['strength']),cscales)
-		
+		print('image',image)
+		print('cnet_images',cnet_images)
 		
 		return sd.img2imgcontrolnet(
 			args['prompt'],
