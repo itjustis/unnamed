@@ -114,6 +114,9 @@ class SD:
 
         self.cn_soft_edge = ControlNetModel.from_pretrained('lllyasviel/control_v11p_sd15_softedge',
          torch_dtype=self.torch_dtype).to('cuda')
+         
+        self.cn_shuffle = ControlNetModel.from_pretrained('lllyasviel/control_v11e_sd15_shuffle',
+         torch_dtype=self.torch_dtype).to('cuda')
 
         
          
