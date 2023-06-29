@@ -1,335 +1,378 @@
-import torch
-import numpy as np
-from skimage import exposure
-from transformers import pipeline
-from torchvision.transforms import ToPILImage, ToTensor
-import matplotlib.pyplot as plt
-from PIL import Image, ImageFilter, ImageDraw, ImageOps
-import cv2
-from controlnet_aux import  HEDdetector, ContentShuffleDetector
+import os, uuid, base64, argparse, subprocess , queue
+from io import BytesIO
+from threading import Thread
+from flask import Flask, request, jsonify
+from pyngrok import ngrok, conf
+from PIL import Image
+from IPython import display as disp
+from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_controlnet import MultiControlNetModel
+from sd import SD, download_models
+from utils import cnet_prepare
+
+job_queue = queue.Queue()
+job_status = {}
+
+import subprocess
+
+parser = argparse.ArgumentParser(description="Run Flask app with Ngrok")
+parser.add_argument("--token", type=str, help="Use Ngrok auth token")
+parser.add_argument("--models_path", type=str, default='/content/models/', help="Path to models directory")
+parser.add_argument("--log", action="store_true", help="log mode")
+
+app_args = parser.parse_args()
 
 
+models_path = app_args.models_path # set model path variable
+temp_folder = 'temp'
+if not os.path.exists(models_path):
+	os.makedirs(models_path)
+if not os.path.exists(temp_folder):
+	os.makedirs(temp_folder)
 
-def cnet_prepare(controlnets,cnets_p, images, sz):
+available_models = [
+	#'CompVis/stable-diffusion-v1-4',
+	'stablediffusionapi/epicrealism'
+	#'runwayml/stable-diffusion-v1-5',
+	#'dreamlike-art/dreamlike-photoreal-2.0',
+	#''
+	]
+
+############# xxx ##############
+def clear():
+	disp.clear_output()
+def init(models):
+	download_models(models,models_path)
+	sd = SD( models_path, models[0], None)
+	return sd
 	
-	for controlnet, prepare,image_path in zip(controlnets,cnets_p,images):
-		print ('prepare for', controlnet, 'is', prepare)
-		image = Image.open(image_path).resize(sz)
+sd = init(available_models)
 
-		if prepare :
-			if controlnet == 'depth':
-				image = p_depth(image)
-			elif controlnet == 'tile':
-				image = p_tile(image, sz.size[0])
-			elif controlnet == 'canny_edge':
-				image = p_canny(image)
-			elif controlnet == 'soft_edge':
-				image = p_canny(image)
-				
-			print(image,'saving')
-			
-			image.resize(sz).convert('RGB').save(image_path)
+# Job queue
+job_queue = queue.Queue()
+
+# Job status dict
+job_status = {}
+
+# Available models list
+available_models = ['model1', 'model2', 'model3']
+
+
+def save_image_from_b64(b64_string, folder, filename):
+	print(b64_string)
+	img_data = base64.urlsafe_b64decode(b64_string)
+	img_file_path = os.path.join(folder, filename)
 	
-def p_shuffle(image):
-	shuffle_processor = ContentShuffleDetector()
-	control_image = shuffle_processor(image)
-	return control_image
+	# Save the raw data to a file for debugging
+	with open(img_file_path + ".raw", "wb") as raw_file:
+		raw_file.write(img_data)
 	
+	try:
+		img = Image.open(BytesIO(img_data))
+		img_path = os.path.join(folder, filename)
+		img.save(img_path)
+		return img_path
+	except Exception as e:
+		print("Exception when trying to open image: ", e)
+		return None
 
-def p_soft(image):
-	processor = HEDdetector.from_pretrained('lllyasviel/Annotators')
-	control_image = processor(image, safe=True)
-	return control_image
 	
-def p_canny(image):
-	image = np.array(image)	
-	low_threshold = 100
-	high_threshold = 200	
-	image = cv2.Canny(image, low_threshold, high_threshold)
-	image = image[:, :, None]
-	image = np.concatenate([image, image, image], axis=2)
-	control_image = Image.fromarray(image)
-	return control_image
+def log(message):
+	if app_args.log:
+		print( str(message))
+		
+	
+from threading import Thread, Lock
+
+def worker(lock):
+	while True:
+		with lock:
+			job = job_queue.get()
+			if job is None:
+				break
+			process_job(job)
+
+# Create a lock
+lock = Lock()
+
+# Start the worker thread
+worker_thread = Thread(target=worker, args=(lock,))
+worker_thread.start()
 
 
-def p_depth(init_image):
-	depth_estimator = pipeline('depth-estimation')
+# init
+if app_args.token:
+	conf.get_default().auth_token =  app_args.token
+##
+public_url = ngrok.connect(5000)
 
-	image = depth_estimator(init_image)['depth']
-	image = np.array(image)
-	image = image[:, :, None]
-	image = np.concatenate([image, image, image], axis=2)
-	control_image = Image.fromarray(image)
-	return control_image
-
-def p_tile(input_image: Image, resolution: int):
-	input_image = input_image.convert("RGB")
-	W, H = input_image.size
-	k = float(resolution) / min(H, W)
-	H *= k
-	W *= k
-	H = int(round(H / 64.0)) * 64
-	W = int(round(W / 64.0)) * 64
-	img = input_image.resize((W, H), resample=Image.LANCZOS)
-	return img
+app = Flask(__name__)
+app.debug = False
 
 
-def tile_upscale(image_path,upr,prompt,negative,pipe,controlnets,cn_scales,tile_size=768, shift=0.333,steps=25,scale=7.5,strength=0.666,interrogate=False):
-	img_upscaled , original_size , upscaled_size= upscale_image(image_path,upr)
-	img_upscaled = img_upscaled.convert('RGB')
-	result = process_tiles(pipe, controlnets, cn_scales, img_upscaled, original_size, prompt, negative, strength, tile_size, shift,steps,scale,interrogate)
-	return result
+@app.route('/api/info/status', methods=['GET'])
+def status():
+	# TODO: Return the status of jobs in queue, server idleness/workload, and GPU/RAM data
+	pass
 
-def process_tiles(pipe, controlnets, cn_scales, img_upscaled, original_size, prompt, negative, strength, tile_size=768, shift=0.333,steps=25,scale=7.5, interrogate=False):
-	zz = 0
+@app.route('/api/info/models', methods=['GET'])
+def models():
+	return jsonify(available_models)
 
-	width, height = img_upscaled.size
-	x_steps = int(width // (tile_size * shift))+2
-	y_steps = int(height // (tile_size * shift))+2
-
-	print (img_upscaled.size)
-
-	for i in range(x_steps):
-		for j in range(y_steps):
-			#clear_output()
-
-			left = int(i * tile_size * shift)
-			upper = int(j * tile_size * shift)
-			right = left + tile_size
-			lower = upper + tile_size
-
-			if right <= width and lower <= height:
-				tile = img_upscaled.crop((left, upper, right, lower))
-
-				if interrogate:
-				  prompt=sd.interrogate(img_upscaled.resize((768,768)),2,4)
-				
-				#generator=torch.manual_seed(65),
-				
-				###need to fix
-				
-				condition_image = cnet_prepare(controlnets, tile)
-			
-				itile = tile
-
-				tile = pipe.img2imgcontrolnet(prompt=prompt,
-					  negative_prompt= negative,
-					  image=tile,
-					  controlnet_conditioning_image=condition_image,
-					  width=tile.size[0],
-					  height=tile.size[1],
-					  strength=strength,
-					  guidance_scale=scale,
-					  controlnet_conditioning_scale=cn_scales,
-					  num_inference_steps=steps,
-					  ).images[0]
-
-				tile = matchc(tile,itile)
-				img_upscaled.paste(tile, (left, upper), mask=ImageOps.invert(Image.open('tmask.png')).convert('L'))
-
-
-	img_processed = crop_image( img_upscaled, tile_size//6)
-
-	return img_processed
-
-
-def matchc(x,y):
-  remapped_np = np.array(x)
-  prev_np = np.array(y)
-  matched = color_match(remapped_np, np.array(x))
-  return Image.fromarray(matched)
-
-
-def add_border(image, border):
-	# Define the border color
-	color = (0, 0, 0)  # black
-
-	# Create a new image with a border
-	new_image = ImageOps.expand(image, border=border, fill=color)
-
-	return new_image
-
-
-def crop_image(image, crop_pixels):
-	width, height = image.size
-
-	# Define the cropping box - left, upper, right, lower
-	crop_box = (crop_pixels, crop_pixels, width - crop_pixels, height - crop_pixels)
-
-	# Create a new image by cropping the original image
-	new_image = image.crop(crop_box)
-
-	return new_image
-
-
-def upscale_image(image_path, upscale_factor=4, padding_size=768):
-	img = Image.open(image_path)
-	display(img)
-	width, height = img.size
-	new_size = (width * upscale_factor, height * upscale_factor)
-	img_upscaled = img.resize(new_size, Image.ANTIALIAS)
-
-
-	img_extended = add_border(img_upscaled, padding_size//3)
-
-	print('img_upscaled.size',img_upscaled.size,'. img_extended.size',img_extended.size)
-
-	return img_extended, (width, height), img_upscaled.size
-
-def color_match(prev_img,color_match_sample):
-  prev_img_lab = cv2.cvtColor(prev_img, cv2.COLOR_RGB2LAB)
-  color_match_lab = cv2.cvtColor(color_match_sample, cv2.COLOR_RGB2LAB)
-  matched_lab = exposure.match_histograms(prev_img_lab, color_match_lab, multichannel=True)
-  return cv2.cvtColor(matched_lab, cv2.COLOR_LAB2RGB)
-
-def add_noise(tensor, mean=0., std=1.):
-	"""
-	Add Gaussian noise to a tensor and clip values to valid range.
-
-	Args:
-	tensor (torch.Tensor): The input tensor.
-	mean (float): Mean of the Gaussian distribution to generate noise.
-	std (float): Standard deviation of the Gaussian distribution to generate noise.
-
-	Returns:
-	torch.Tensor: The tensor with added noise.
-	"""
-	noise = torch.randn_like(tensor) * std + mean
-	noisy_tensor = tensor + noise
-	noisy_tensor = torch.clamp(noisy_tensor, tensor.min(), tensor.max())
-	return noisy_tensor
-
-def create_gif(image_list, duration, output_path):
-	"""
-	Create a GIF from a list of PIL Images.
-
-	Args:
-	image_list (list): List of PIL Image objects.
-	duration (int): Duration between frames in the GIF (in milliseconds).
-	output_path (str): Path to save the output GIF.
-	"""
-	# Save the image list as a GIF
-	image_list[0].save(
-		output_path, save_all=True, append_images=image_list[1:], optimize=False, duration=duration, loop=0
-	)
-
-def tensor_to_pil(tensor):
-	"""
-	Convert a PyTorch tensor to a PIL Image.
-	"""
-	to_pil = ToPILImage()
-	return to_pil(tensor)
-
-def pil_to_tensor(image):
-	"""
-	Convert a PIL Image to a PyTorch tensor.
-	"""
-	to_tensor = ToTensor()
-	return to_tensor(image)
-
-def display_tensor_image(tensor):
-	"""
-	Display a PyTorch tensor as an image.
-	"""
-	plt.imshow(tensor_to_pil(tensor))
-	plt.show()
-
-def remap_displacement(image, displacement):
-	"""
-	Applies a displacement field (also known as remap) to an image.
-	`image` should be a PyTorch tensor with shape (C, H, W).
-	`displacement` should be a PyTorch tensor with shape (2, H, W) where
-	the first channel is the x displacement and the second channel is the y displacement.
-	"""
-	if isinstance(image, Image.Image):
-		image = pil_to_tensor(image)
-	elif isinstance(image, torch.Tensor):
-		pass
+@app.route('/api/job/delete', methods=['DELETE'])
+def delete_job():
+	job_id = request.args.get('jobid')
+	if job_id and job_id in job_status:
+		job_status[job_id]['status'] = 'deleted'
+		return jsonify({"result": "Job deleted"})
 	else:
-		raise ValueError('Image should be a PyTorch tensor or a PIL Image')
-	
-	image = image.to(displacement.device)
-
-	# Create a grid to apply the displacement
-	grid_y, grid_x = torch.meshgrid(
-		torch.linspace(-1, 1, image.shape[1]),
-		torch.linspace(-1, 1, image.shape[2]),
-	)
-
-	# Stack x and y grid components together
-	grid = torch.stack((grid_x, grid_y)).unsqueeze(0).to(displacement.device)
-
-	# Apply the displacement
-	grid += displacement
-
-	# Reshape the grid
-	grid = grid.permute(0, 2, 3, 1)
-
-	# Apply the grid to the image
-	#return torch.nn.functional.grid_sample(image.unsqueeze(0), grid, mode='bilinear', padding_mode='border', align_corners=True).squeeze(0)
-	return torch.nn.functional.grid_sample(image.unsqueeze(0), grid, mode='bilinear', padding_mode='reflection', align_corners=True).squeeze(0)
+		return jsonify({"error": "Job not found"}), 404
 
 
-def create_uv_map(image):
-	"""
-	Create a UV map with the same size as `image`.
-	`image` should be a PyTorch tensor with shape (C, H, W) or a PIL Image.
-	Returns a tensor with shape (2, H, W) where the first channel is the U map and the second channel is the V map.
-	"""
-	if isinstance(image, Image.Image):
-		# Convert PIL Image to tensor
-		image = pil_to_tensor(image)
-	elif isinstance(image, torch.Tensor):
-		pass
+@app.route('/api/job/<path:job_id>/status', methods=['GET'])
+def get_job_status(job_id):
+	#log(job_id)
+	if job_id and job_id in job_status:
+		return jsonify(job_status[job_id])
 	else:
-		raise ValueError('Image should be a PyTorch tensor or a PIL Image')
-
-	# Create a grid
-	grid = torch.meshgrid(
-		torch.linspace(0, 1, image.shape[1]),
-		torch.linspace(0, 1, image.shape[2]),
-	)
-	return torch.stack(grid)
-
-def process_displacement_image(displacement_image):
-	"""
-	Processes a displacement image to a displacement tensor.
-	Red channel is used as x displacement and green channel is used as y displacement.
-	"""
-	tensor = pil_to_tensor(displacement_image)
-	# Normalize displacement to [-1, 1] (assuming input is [0, 1])
-	tensor = tensor * 2 - 1
-	# Use only red and green channels for x and y displacement
-	return tensor[:2, :, :]
-
-def remap_displacement_depth(image, depth_map):
-	"""
-	Applies a displacement field (also known as remap) to an image using a depth map.
-	`image` should be a PyTorch tensor with shape (C, H, W).
-	`depth_map` should be a PyTorch tensor with shape (1, H, W).
-	"""
-	# Make sure the image and displacement are on the same device
-	image = image.to(depth_map.device)
-
-	# Create a grid to apply the displacement
-	grid_y, grid_x = torch.meshgrid(
-		torch.linspace(-1, 1, image.shape[1]), 
-		torch.linspace(-1, 1, image.shape[2]),
-	)
-
-	# Stack x and y grid components together
-	grid = torch.stack((grid_x, grid_y)).unsqueeze(0).to(depth_map.device)
-
-	# Normalize depth_map to range [-1,1] for displacement
-	depth_map = depth_map * 2 - 1
-
-	# Scale the displacement by the depth_map (this is a simple model and might not be perfect for all use cases)
-	grid += grid * depth_map
-
-	# Reshape the grid
-	grid = grid.permute(0, 2, 3, 1)
-
-	# Apply the grid to the image
-	return torch.nn.functional.grid_sample(image.unsqueeze(0), grid, mode='bilinear', padding_mode='reflection', align_corners=True).squeeze(0)
+		return jsonify({"error": "Job not found"}), 404
 
 
+
+# List of allowed tasks.
+ALLOWED_TASKS = ['imagine', 'overpaint', 'inpaint', 'controlnet']
+
+@app.route('/api/<path:task>', methods=['POST'])
+def create_task(task):
+	# Verify if the task is valid.
+	if task not in ALLOWED_TASKS:
+		return jsonify({"error": "Invalid task"}), 400
+
+	# Fetch request data.
+	job_data = request.get_json()
+	args = job_data['args']
+	job_id = job_data['id']
+
+	# Log request data for debugging.
+	log(f"Task: {task}")
+	
+
+	img_path = None
+
+	# Process the image if the task is not 'imagine'.
+	if task != 'imagine':
+		img_path = process_image(args, job_id)
+		
+	cnet_images=[]
+	for cnet in args['modules']:
+		filename = f"temp/{cnet}.png";
+		if args['modules'][cnet]['ref']['image']:
+			filename = process_cnet_image(args['modules'][cnet]['ref']['image'],filename)
+			cnet_images.append(filename)
+		else:
+			Image.open(img_path).save(filename)
+			cnet_images.append(filename)
+			
+	args['cnet_images'] = cnet_images;
+
+	# Create a job object and put it in the queue.
+	job = create_job(args, job_id, img_path, task)
+
+	# Update the job status and return the response.
+	job_status[job_id] = {"job_id": job_id, "status": "queued"}
+
+	return jsonify(job_status[job_id])
+
+def process_cnet_image(b64_string,filename):
+	"""Decode the image from base64 and save it."""
+	
+	f = BytesIO()
+	f.write(base64.b64decode(b64_string))
+	f.seek(0)
+	
+	img = Image.open(f)
+	
+	#if args.get('inpaint') != "true":
+	#	img = img.convert("RGB")
+	
+	
+	img.save(filename)
+	
+	return filename
+	
+def process_image(args, job_id):
+	"""Decode the image from base64 and save it."""
+	b64_string = args['initImage']
+	f = BytesIO()
+	f.write(base64.b64decode(b64_string))
+	f.seek(0)
+
+	img = Image.open(f)
+
+	if args.get('inpaint') != "true":
+		img = img.convert("RGB")
+
+	filename = f"temp/{job_id}.png"
+	img.save(filename)
+
+	return filename
+
+def create_job(args, job_id, img_path, task):
+	"""Create a job object."""
+	args['img_path'] = str(img_path)
+	job = {
+		"job_id": job_id,
+		"task": task,
+		"status": "queued",
+		"args": args
+	}
+	job_queue.put(job)
+
+	return job
+
+# Helper function to convert PIL image to base64
+def image_to_base64(img):
+	buffered = BytesIO()
+	img.save(buffered, format="PNG")
+	return base64.b64encode(buffered.getvalue()).decode("utf-8")
+	
+# SD functions
+def imagine(args):
+	return sd.txt2img(
+		args['prompt'],
+		width=args['width'],
+		height=args['height'],
+		num_inference_steps=int(args['steps']),
+		guidance_scale=float(args['scale']),
+		negative_prompt=args['negative_prompt']
+	)[0][0]
+	
+
+def overpaint(args,variation):
+	log ('overpainting with image at '+args['img_path'])
+	sz = (args['width'],args['height'])
+	image = Image.open(args['img_path']).convert('RGB').resize(sz)
+	cnets_n=[]
+	cnets_p=[]
+	cnets = []
+	cscales = []
+	cnet_images=args['cnet_images']
+	
+	
+	if len(args['modules']) > 0:
+		if len(args['modules']) == 1:
+			for cnet in args['modules']:
+				cnets = eval("sd.cn_"+str(args['modules'][cnet]['mode']))
+				sd.img2imgcontrolnet.controlnet =cnets
+				cscales = (float(args['modules'][cnet]['scale']))
+				cnets_n.append(str(args['modules'][cnet]['mode']))
+				cnets_p.append(args['modules'][cnet]['prepare'])
+						
+		else:
+			
+			
+			
+			for cnet in args['modules']:
+				cnets.append(eval("sd.cn_"+str(args['modules'][cnet]['mode'])))
+				cscales.append(float(args['modules'][cnet]['scale']))
+				cnets_n.append(str(args['modules'][cnet]['mode']))
+				cnets_p.append(args['modules'][cnet]['prepare'])
+			
+			sd.img2imgcontrolnet.controlnet = MultiControlNetModel(cnets)
+		
+		if(variation==0):
+			print(cnets_n,cnets_p,cnet_images,sz)
+			cnet_prepare(cnets_n,cnets_p,cnet_images,sz)
+			
+		cnet_image_pils = []
+		
+		log('okay')
+		
+		for img in cnet_images:
+			cnet_image_pils.append(Image.open(img));
+			
+		print('---generating with',cnets,int(args['steps']),float(args['scale']),args['negative_prompt'],float(args['strength']),cscales)
+		print('image',image)
+		print('cnet_images',cnet_images)
+		
+		return sd.img2imgcontrolnet(
+			args['prompt'],
+			image,
+			controlnet_conditioning_image=cnet_image_pils,
+			num_inference_steps=int(args['steps']),
+			guidance_scale=float(args['scale']),
+			negative_prompt=args['negative_prompt'],
+			strength=float(args['strength']),
+			controlnet_conditioning_scale=cscales
+		)[0][0]
+		log('oops')
+	else:
+		return sd.img2img(
+			args['prompt'],
+			image,
+			num_inference_steps=int(args['steps']),
+			guidance_scale=float(args['scale']),
+			negative_prompt=args['negative_prompt'],
+			strength=float(args['strength'])
+		)[0][0]
+	
+def inpaint(args):
+	return None
+	
+def controlnet(args):
+	return None
+	
+# Function to process jobs
+def process_job(job):
+	try:
+		task = job['task']
+		args = job['args']
+		job_id = job["job_id"]
+		job_status[job_id]['status'] = "processing"
+		variations = int(args['variations'])
+		
+		result = None
+		b64_result = ''
+		divider = ''
+			
+		log('variations: '+str(variations))
+		
+		if args['prompt'] == "":
+			image = Image.open(args['img_path']).convert('RGB')
+			args['prompt'] = sd.interrogate(image, min_flavors=2, max_flavors=4)
+			
+		
+			
+		for i in range(variations):
+			if variations>1 and i!=(variations-1):
+					   divider = ','
+			else:
+					   divider = ''
+			log('generating image #'+str(i))
+			if task == 'imagine':
+				result = imagine(args)
+			elif task == 'overpaint':
+				result = overpaint(args,i)
+			elif task == 'inpaint':
+				result = inpaint(args)
+			elif task == 'controlnet':
+				result = controlnet(args)
+				
+			log('saving result')
+				
+			result.save(temp_folder+'/out_'+str(i)+'_'+job_id+'.png')
+				
+			b64_result+=image_to_base64(result.convert('RGB'))+divider
+	
+		if result is not None:
+			
+			job_status[job['job_id']] = {"status": "completed", "result": b64_result}
+		else:
+			job_status[job['job_id']] = {"status": "failed"}
+	except Exception as e:
+		print(f"Error processing job {job['job_id']}: {e}")
+		job_status[job['job_id']] = {"status": "failed", "error": str(e)}
+
+if __name__ == "__main__":
+	clear()
+	log(public_url)
+	app.run()
