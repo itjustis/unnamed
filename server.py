@@ -291,7 +291,7 @@ def overpaint(args,variation):
 			cnet_image_pils.append(Image.open(img));
 			
 			
-		log('---generating with',cnets,int(args['steps']),float(args['scale']),args['negative_prompt'],float(args['strength'],cscales)
+		print('---generating with',cnets,int(args['steps']),float(args['scale']),args['negative_prompt'],float(args['strength'],cscales)
 		
 		
 		return sd.img2imgcontrolnet(
