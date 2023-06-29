@@ -247,7 +247,7 @@ def imagine(args):
 	)[0][0]
 	
 
-def overpaint(args):
+def overpaint(args,variation):
 	log ('overpainting with image at '+args['img_path'])
 	sz = (args['width'],args['height'])
 	image = Image.open(args['img_path']).convert('RGB').resize(sz)
@@ -342,7 +342,7 @@ def process_job(job):
 			if task == 'imagine':
 				result = imagine(args)
 			elif task == 'overpaint':
-				result = overpaint(args)
+				result = overpaint(args,i)
 			elif task == 'inpaint':
 				result = inpaint(args)
 			elif task == 'controlnet':
