@@ -10,28 +10,24 @@ from controlnet_aux import  HEDdetector
 
 
 
-def cnet_prepare(controlnets,cnets_p, tile):
+def cnet_prepare(controlnets,cnets_p, images, sz):
 	
-	condition_image = []
-
-	for controlnet, prepare in zip(controlnets,cnets_p):
+	for controlnet, prepare,image_path in zip(controlnets,cnets_p,images):
 		print ('prepare for', controlnet, 'is', prepare)
+		image = Image.open(image_path).resize(sz)
 
-		if prepare:
-			condition_image.append(tile)
-		else:
+		if prepare :
 			if controlnet == 'depth':
-				condition_image.append(p_depth(tile).resize(tile.size))
+				image = p_depth(image)
 			elif controlnet == 'tile':
-				condition_image.append(p_tile(tile, tile.size[0]).resize(tile.size))
+				image = p_tile(image, sz.size[0]))
 			elif controlnet == 'canny_edge':
-				condition_image.append(p_canny(tile).resize(tile.size))
+				image = p_canny(image)
 			elif controlnet == 'soft_edge':
-				condition_image.append(p_canny(tile).resize(tile.size))
-			else:
-				condition_image.append(tile)
+				image = p_canny(image)
+			
+			image.resize(sz).save(image_path)
 	
-	return condition_image
 	
 def p_soft(image):
 	processor = HEDdetector.from_pretrained('lllyasviel/Annotators')
@@ -102,6 +98,8 @@ def process_tiles(pipe, controlnets, cn_scales, img_upscaled, original_size, pro
 				  prompt=sd.interrogate(img_upscaled.resize((768,768)),2,4)
 				
 				#generator=torch.manual_seed(65),
+				
+				###need to fix
 				
 				condition_image = cnet_prepare(controlnets, tile)
 			
