@@ -6,9 +6,7 @@ from torchvision.transforms import ToPILImage, ToTensor
 import matplotlib.pyplot as plt
 from PIL import Image, ImageFilter, ImageDraw, ImageOps
 import cv2
-from controlnet_aux import  HEDdetector
-
-
+from controlnet_aux import  HEDdetector, ContentShuffleDetector
 
 def cnet_prepare(controlnets,cnets_p, images, sz):
 	
@@ -28,7 +26,12 @@ def cnet_prepare(controlnets,cnets_p, images, sz):
 			
 			image.resize(sz).save(image_path)
 	
+def p_shuffle(image):
+	shuffle_processor = ContentShuffleDetector()
+	control_image = shuffle_processor(image)
+	return control_image
 	
+
 def p_soft(image):
 	processor = HEDdetector.from_pretrained('lllyasviel/Annotators')
 	control_image = processor(image, safe=True)
