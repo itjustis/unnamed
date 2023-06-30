@@ -6,7 +6,7 @@ from pyngrok import ngrok, conf
 from PIL import Image
 from IPython import display as disp
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_controlnet import MultiControlNetModel
-from sd import SD, download_models
+from sd import SD, download_models, load_cnet
 from utils import cnet_prepare
 
 job_queue = queue.Queue()
