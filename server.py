@@ -262,7 +262,7 @@ def overpaint(args,variation):
 	if len(args['modules']) > 0:
 		if len(args['modules']) == 1:
 			for cnet in args['modules']:
-				cnets = eval("sd.cn_"+str(args['modules'][cnet]['mode']))
+				cnets =load_cnet( str(args['modules'][cnet]['mode']) )
 				sd.img2imgcontrolnet.controlnet =cnets
 				cscales = (float(args['modules'][cnet]['scale']))
 				cnets_n.append(str(args['modules'][cnet]['mode']))
@@ -273,7 +273,7 @@ def overpaint(args,variation):
 			
 			
 			for cnet in args['modules']:
-				cnets.append(eval("sd.cn_"+str(args['modules'][cnet]['mode'])))
+				cnets.append(load_cnet(str(args['modules'][cnet]['mode'])))
 				cscales.append(float(args['modules'][cnet]['scale']))
 				cnets_n.append(str(args['modules'][cnet]['mode']))
 				cnets_p.append(args['modules'][cnet]['prepare'])
