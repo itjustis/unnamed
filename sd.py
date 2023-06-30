@@ -26,6 +26,29 @@ from huggingface_hub import snapshot_download
 from clip_interrogator import Config, Interrogator
 import tomesd
 
+
+def load_cnet(cnet,torch_dtype=torch.float16):
+  if cnet == 'content':
+    return ControlNetModel.from_pretrained('lllyasviel/control_v11f1e_sd15_tile',
+     torch_dtype=torch_dtype).to('cuda')
+  if cnet == 'depth':
+    return ControlNetModel.from_pretrained('lllyasviel/control_v11f1p_sd15_depth',
+     torch_dtype=torch_dtype).to('cuda')
+  if cnet == 'scribble':
+    return ControlNetModel.from_pretrained('lllyasviel/control_v11p_sd15_scribble',
+     torch_dtype=torch_dtype).to('cuda')
+  if cnet == 'canny_edge':
+    return ControlNetModel.from_pretrained('lllyasviel/control_v11p_sd15_canny',
+     torch_dtype=torch_dtype).to('cuda')
+  if cnet == 'soft_edge':
+    return ControlNetModel.from_pretrained('lllyasviel/control_v11p_sd15_softedge',
+     torch_dtype=torch_dtype).to('cuda')
+  if cnet == 'shuffle':
+    return ControlNetModel.from_pretrained('lllyasviel/control_v11e_sd15_shuffle',
+     torch_dtype=torch_dtype).to('cuda')
+  
+  
+  
 def resize_for_condition_image(input_image: Image, resolution: int):
     input_image = input_image.convert("RGB")
     W, H = input_image.size
@@ -98,31 +121,9 @@ class SD:
             requires_safety_checker=False,
         ).to('cuda')
         
-        ################ cn
-        
-        self.cn_content = ControlNetModel.from_pretrained('lllyasviel/control_v11f1e_sd15_tile',
-         torch_dtype=self.torch_dtype).to('cuda')
-         
-        self.cn_depth = ControlNetModel.from_pretrained('lllyasviel/control_v11f1p_sd15_depth',
-         torch_dtype=self.torch_dtype).to('cuda')
+        #### .enable_xformers_memory_efficient_attention()
 
-        self.cn_scribble = ControlNetModel.from_pretrained('lllyasviel/control_v11p_sd15_scribble',
-         torch_dtype=self.torch_dtype).to('cuda')
-
-        self.cn_canny_edge = ControlNetModel.from_pretrained('lllyasviel/control_v11p_sd15_canny',
-         torch_dtype=self.torch_dtype).to('cuda')
-
-        self.cn_soft_edge = ControlNetModel.from_pretrained('lllyasviel/control_v11p_sd15_softedge',
-         torch_dtype=self.torch_dtype).to('cuda')
-         
-        self.cn_shuffle = ControlNetModel.from_pretrained('lllyasviel/control_v11e_sd15_shuffle',
-         torch_dtype=self.torch_dtype).to('cuda')
-
-        
-         
-         #### .enable_xformers_memory_efficient_attention()
-
-        self.controlnet = None
+        self.controlnet = None 
         
           
         self.clean()
