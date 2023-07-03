@@ -277,7 +277,6 @@ def imagine(args,variation):
 			num_inference_steps=int(args['steps']),
 			guidance_scale=float(args['scale']),
 			negative_prompt=args['negative_prompt'],
-			strength=float(args['strength']),
 			controlnet_conditioning_scale=cscales
 		)[0][0]
 		
