@@ -78,7 +78,7 @@ class SD:
         self.txt2img.feature_extractor=None
         self.txt2img.requires_safety_checker=False
         
-        self.load_sampler(txt2img,'euler_a')
+        
         
         tomesd.apply_patch(self.txt2img, ratio=0.5)
         
@@ -120,9 +120,11 @@ class SD:
             requires_safety_checker=False,
         ).to('cuda')
         
+        self.load_sampler('euler_a')
+        
         #### .enable_xformers_memory_efficient_attention()
 
-        self.controlnet = None 
+        
         
           
         self.clean()
