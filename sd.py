@@ -32,7 +32,7 @@ cnet_dict = {
     'scribble': 'lllyasviel/control_v11p_sd15_scribble',
     'canny_edge': 'lllyasviel/control_v11p_sd15_canny',
     'soft_edge': 'lllyasviel/control_v11p_sd15_softedge',
-    'shuffle': 'lllyasviel/control_v11e_sd15_shuffle'
+    'shuffle': 'lllyasviel/control_v11e_sd15_shuffle',
     'openpose': 'lllyasviel/control_v11p_sd15_openpose'
 }
 
