@@ -26,29 +26,27 @@ from huggingface_hub import snapshot_download
 from clip_interrogator import Config, Interrogator
 import tomesd
 
+cnet_dict = {
+    'content': 'lllyasviel/control_v11f1e_sd15_tile',
+    'depth': 'lllyasviel/control_v11f1p_sd15_depth',
+    'scribble': 'lllyasviel/control_v11p_sd15_scribble',
+    'canny_edge': 'lllyasviel/control_v11p_sd15_canny',
+    'soft_edge': 'lllyasviel/control_v11p_sd15_softedge',
+    'shuffle': 'lllyasviel/control_v11e_sd15_shuffle'
+}
 
-def load_cnet(cnet,torch_dtype=torch.float16):
-  if cnet == 'content':
-    return ControlNetModel.from_pretrained('lllyasviel/control_v11f1e_sd15_tile',
-     torch_dtype=torch_dtype).to('cuda')
-  if cnet == 'depth':
-    return ControlNetModel.from_pretrained('lllyasviel/control_v11f1p_sd15_depth',
-     torch_dtype=torch_dtype).to('cuda')
-  if cnet == 'scribble':
-    return ControlNetModel.from_pretrained('lllyasviel/control_v11p_sd15_scribble',
-     torch_dtype=torch_dtype).to('cuda')
-  if cnet == 'canny_edge':
-    return ControlNetModel.from_pretrained('lllyasviel/control_v11p_sd15_canny',
-     torch_dtype=torch_dtype).to('cuda')
-  if cnet == 'soft_edge':
-    return ControlNetModel.from_pretrained('lllyasviel/control_v11p_sd15_softedge',
-     torch_dtype=torch_dtype).to('cuda')
-  if cnet == 'shuffle':
-    return ControlNetModel.from_pretrained('lllyasviel/control_v11e_sd15_shuffle',
-     torch_dtype=torch_dtype).to('cuda')
-  
-  
-  
+samplers_dict={
+  'unipcm':UniPCMultistepScheduler,
+  'ddpm':DDPMScheduler, 
+  'ddim':DDIMScheduler,
+  'pndm':PNDMScheduler,
+  'lms':LMSDiscreteScheduler,
+  'euler_a':EulerAncestralDiscreteScheduler,
+  'euler':EulerDiscreteScheduler,
+  'dpm':DPMSolverMultistepScheduler
+}
+
+
 def resize_for_condition_image(input_image: Image, resolution: int):
     input_image = input_image.convert("RGB")
     W, H = input_image.size
@@ -65,33 +63,34 @@ class SD:
         self.torch_dtype = torch_dtype
         self.mo = mo
         model_path = os.path.join(models_path,model_id)
-        if controlnet_model_id:
-          controlnet_model_path  = os.path.join(models_path,controlnet_model_id)
-        else:
-          controlnet_model_path = None
         
         self.ci = Interrogator(Config(clip_model_name="ViT-L-14/openai"))
 
-        #self.UniPCM = UniPCMultistepScheduler.from_config(pipe.scheduler.config)
-        #self.ddpm = DDPMScheduler.from_pretrained(model_path, subfolder="scheduler")
-        #self.ddim = DDIMScheduler.from_pretrained(model_path, subfolder="scheduler")
-        #self.pndm = PNDMScheduler.from_pretrained(model_path, subfolder="scheduler")
-        #self.lms = LMSDiscreteScheduler.from_pretrained(model_path, subfolder="scheduler")
-        #self.euler_a = EulerAncestralDiscreteScheduler.from_pretrained(model_path, subfolder="scheduler")
-        #self.euler = EulerDiscreteScheduler.from_pretrained(model_path, subfolder="scheduler")
-        #self.dpm = DPMSolverMultistepScheduler.from_pretrained(model_path, subfolder="scheduler")
-        self.unipcm = UniPCMultistepScheduler.from_pretrained(model_path, subfolder="scheduler")
-        self.init_models(model_path,controlnet_model_path)
+        self.init_models(model_path)
         self.interrogate = self.ci.interrogate
         self.clean()
 
-    def init_models(self, model_path, controlnet_model_path):
+    def init_models(self, model_path):
         self.txt2img = StableDiffusionPipeline.from_pretrained(
             model_path, torch_dtype=self.torch_dtype
         ).to('cuda')
-        self.txt2img.scheduler = self.unipcm
+        self.txt2img.safety_checker=None
+        self.txt2img.feature_extractor=None,
+        self.txt2img.requires_safety_checker=False
+        
+        load_sampler(txt2img,'euler_a')
         
         tomesd.apply_patch(self.txt2img, ratio=0.5)
+        
+        self.controlnet = StableDiffusionControlNetPipeline(vae=self.txt2img.vae,
+          text_encoder=self.txt2img.text_encoder,
+          tokenizer=self.txt2img.tokenizer,
+          unet=self.txt2img.unet,
+          controlnet=None,
+          scheduler=self.txt2img.scheduler,
+          safety_checker=None,
+          feature_extractor=None,
+          requires_safety_checker=False)
         
         ######
         if self.mo:
@@ -127,6 +126,37 @@ class SD:
         
           
         self.clean()
+        
+    def load_cnets(self, cnets, torch_dtype=torch.float16):
+      cnets_loaded = []
+      for cnet in cnets:
+        if cnet in cnet_dict:
+            cnets_loaded.append(ControlNetModel.from_pretrained(cnet_dict[cnet], torch_dtype=torch_dtype).to('cuda'))
+        else:
+            print(cnet, 'not found')
+            
+      if len(cnets_loaded)==0:
+        self.controlnet.controlnet = None
+        self.img2imgcontrolnet.controlnet = self.controlnet.controlnet
+            
+      if len(cnets_loaded)==1:
+        self.controlnet.controlnet = cnets_loaded[0]
+        self.img2imgcontrolnet.controlnet = self.controlnet.controlnet
+        print('ok')
+        
+      if len(cnets_loaded)>1:
+        self[pipe].controlnet = MultiControlNetModel(cnets_loaded)
+        print('ok')
+    
+    def load_sampler(self,  sampler, torch_dtype=torch.float16):
+      if sampler in samplers_dict:
+        self.txt2img.scheduler = samplers_dict[sampler].from_config(pipe.scheduler.config,torch_dtype=torch_dtype).to('cuda')
+        self.img2img.scheduler = self.txt2img.scheduler
+        self.controlnet.scheduler = self.txt2img.scheduler
+        self.img2imgcontrolnet.scheduler = self.txt2img.scheduler
+      else:
+        print('sampler '+sampler+' not found')
+      
     
     def load_model(self,model_id):
       self.model_path = os.path.join(models_path,model_id)
