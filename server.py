@@ -170,8 +170,11 @@ def create_task(task):
 				filename = process_cnet_image(args['modules'][cnet]['ref']['image'],filename)
 				cnet_images.append(filename)
 		else:
-			Image.open(img_path).save(filename)
-			cnet_images.append(filename)
+			if (img_path):
+				Image.open(img_path).save(filename)
+				cnet_images.append(filename)
+			else:
+				print ('image for',cnet,'not found')
 			
 	print (cnet_images)
 			
@@ -301,9 +304,9 @@ def cnetmodules(modules):
 					
 	else:	
 		for cnet in modules:
-			cnets.append((str(args['modules'][cnet]['mode'])))
-			cscales.append(float(args['modules'][cnet]['scale']))
-			cnets_p.append(args['modules'][cnet]['prepare'])
+			cnets.append((str(modules[cnet]['mode'])))
+			cscales.append(float(modules[cnet]['scale']))
+			cnets_p.append(modules[cnet]['prepare'])
 			
 	return (cnets,cscales,cnets_p)
 	
