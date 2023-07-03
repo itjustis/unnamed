@@ -262,7 +262,7 @@ def imagine(args,variation):
 		
 		if(variation==0):
 			log('preparing')
-			cnet_prepare(cnets_,cnets_p,cnet_images,sz)
+			cnet_prepare(cnets,cnets_p,cnet_images,sz)
 			
 		cnet_image_pils = []
 		
