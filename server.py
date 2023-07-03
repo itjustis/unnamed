@@ -242,7 +242,7 @@ def image_to_base64(img):
 	return base64.b64encode(buffered.getvalue()).decode("utf-8")
 	
 # SD functions
-def imagine(args):
+def imagine(args,variation):
 	log ('imagining')
 	print(args)
 	sz = (args['width'],args['height'])
@@ -323,7 +323,7 @@ def overpaint(args,variation):
 		sd.load_cnets(cnets)
 		
 		if(variation==0):
-			cnet_prepare(cnets_,cnets_p,cnet_images,sz)
+			cnet_prepare(cnets,cnets_p,cnet_images,sz)
 			
 		cnet_image_pils = []
 		
@@ -383,13 +383,11 @@ def process_job(job):
 					   divider = ''
 			log('generating image #'+str(i))
 			if task == 'imagine':
-				result = imagine(args)
+				result = imagine(args,i)
 			elif task == 'overpaint':
 				result = overpaint(args,i)
 			elif task == 'inpaint':
 				result = inpaint(args)
-			elif task == 'controlnet':
-				result = controlnet(args)
 				
 			log('saving result')
 				
