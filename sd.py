@@ -65,15 +65,21 @@ class SD:
         model_path = os.path.join(models_path,model_id)
         self.model_path=model_path
         
-        self.ci = Interrogator(Config(clip_model_name="ViT-L-14/openai"))
-        print('ci loaded')
-
         self.init_models(model_path)
-        self.interrogate = self.ci.interrogate
         self.clean()
+    
+    def interrogate(self, image,f=2,f2=4):
+        print('Interrogating.')
+      
+        if self.ci.interrogate:
+          return self.ci.interrogate(image,f,f2)
+        else:
+          self.ci = Interrogator(Config(clip_model_name="ViT-L-14/openai"))
+          print('Interrogator loaded.')
+          return self.ci.interrogate(image,f,f2)
 
     def init_models(self, model_path):
-        print('init')
+        print('initializing models.')
         self.txt2img = StableDiffusionPipeline.from_pretrained(
             model_path, torch_dtype=self.torch_dtype
         ).to('cuda')
