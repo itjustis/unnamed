@@ -65,20 +65,27 @@ class SD:
         model_path = os.path.join(models_path,model_id)
         
         self.ci = Interrogator(Config(clip_model_name="ViT-L-14/openai"))
+        print('ci loaded')
 
         self.init_models(model_path)
         self.interrogate = self.ci.interrogate
         self.clean()
 
     def init_models(self, model_path):
+        log('init')
         self.txt2img = StableDiffusionPipeline.from_pretrained(
             model_path, torch_dtype=self.torch_dtype
         ).to('cuda')
+        log('checkers')
         self.txt2img.safety_checker=None
         self.txt2img.feature_extractor=None
         self.txt2img.requires_safety_checker=False
+        log('tome')
         
         tomesd.apply_patch(self.txt2img, ratio=0.5)
+        tomesd.apply_patch(self.txt2img, ratio=0.5)
+        
+        log('cn load')
         
         self.controlnet = StableDiffusionControlNetPipeline(vae=self.txt2img.vae,
           text_encoder=self.txt2img.text_encoder,
@@ -89,6 +96,8 @@ class SD:
           safety_checker=None,
           feature_extractor=None,
           requires_safety_checker=False)
+          
+        log('cnok')
         
         ######
         if self.mo:
@@ -117,6 +126,8 @@ class SD:
             feature_extractor=None,
             requires_safety_checker=False,
         ).to('cuda')
+        
+        log('loading sampler')
         
         self.load_sampler('euler_a')
         
