@@ -150,7 +150,8 @@ class SD:
     
     def load_sampler(self,  sampler, torch_dtype=torch.float16):
       if sampler in samplers_dict:
-        self.txt2img.scheduler = samplers_dict[sampler].from_config(self.txt2img.scheduler.config,torch_dtype=torch_dtype)
+        self.txt2img.scheduler = samplers_dict[sampler].from_pretrained(self.model_path, subfolder="scheduler")
+        #from_config(self.txt2img.scheduler.config,torch_dtype=torch_dtype)
         self.img2img.scheduler = self.txt2img.scheduler
         self.controlnet.scheduler = self.txt2img.scheduler
         self.img2imgcontrolnet.scheduler = self.txt2img.scheduler
