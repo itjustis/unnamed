@@ -75,7 +75,7 @@ class SD:
             model_path, torch_dtype=self.torch_dtype
         ).to('cuda')
         self.txt2img.safety_checker=None
-        self.txt2img.feature_extractor=None,
+        self.txt2img.feature_extractor=None
         self.txt2img.requires_safety_checker=False
         
         load_sampler(txt2img,'euler_a')
