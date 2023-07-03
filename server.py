@@ -273,7 +273,7 @@ def imagine(args,variation):
 		log('generating...')
 		return sd.controlnet(
 			args['prompt'],
-			controlnet_conditioning_image=cnet_image_pils,
+			controlnet_conditions=cnet_image_pils,
 			num_inference_steps=int(args['steps']),
 			guidance_scale=float(args['scale']),
 			negative_prompt=args['negative_prompt'],
