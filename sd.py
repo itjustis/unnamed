@@ -122,9 +122,6 @@ class SD:
         
         #### .enable_xformers_memory_efficient_attention()
 
-        
-        
-          
         self.clean()
         
     def load_cnets(self, cnets, torch_dtype=torch.float16):
@@ -149,6 +146,7 @@ class SD:
         print('ok')
     
     def load_sampler(self,  sampler, torch_dtype=torch.float16):
+      print('loading sampler',sampler)
       if sampler in samplers_dict:
         self.txt2img.scheduler = samplers_dict[sampler].from_pretrained(self.model_path, subfolder="scheduler")
         #from_config(self.txt2img.scheduler.config,torch_dtype=torch_dtype)
