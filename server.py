@@ -173,6 +173,8 @@ def create_task(task):
 			Image.open(img_path).save(filename)
 			cnet_images.append(filename)
 			
+	print (cnet_images)
+			
 	args['cnet_images'] = cnet_images;
 
 	# Create a job object and put it in the queue.
@@ -246,19 +248,26 @@ def imagine(args):
 	
 	if len(args['modules']) > 0:
 		log ('with control')
+		print ('cnet_images',args['cnet_images'])
 		cnet_images=args['cnet_images']
 		cnets,cscales,cnets_p = cnetmodules (args['modules'])
 		
+		log('loading cnets')
+				
 		sd.load_cnets(cnets)
+		log('loaded')
 		
 		if(variation==0):
+			log('preparing')
 			cnet_prepare(cnets_,cnets_p,cnet_images,sz)
 			
 		cnet_image_pils = []
 		
+		
 		for img in cnet_images:
 			cnet_image_pils.append(Image.open(img));
 		
+		log('generating...')
 		return sd.controlnet(
 			args['prompt'],
 			controlnet_conditioning_image=cnet_image_pils,
