@@ -72,20 +72,20 @@ class SD:
         self.clean()
 
     def init_models(self, model_path):
-        log('init')
+        print('init')
         self.txt2img = StableDiffusionPipeline.from_pretrained(
             model_path, torch_dtype=self.torch_dtype
         ).to('cuda')
-        log('checkers')
+        print('checkers')
         self.txt2img.safety_checker=None
         self.txt2img.feature_extractor=None
         self.txt2img.requires_safety_checker=False
-        log('tome')
+        print('tome')
         
         tomesd.apply_patch(self.txt2img, ratio=0.5)
         tomesd.apply_patch(self.txt2img, ratio=0.5)
         
-        log('cn load')
+        print('cn load')
         
         self.controlnet = StableDiffusionControlNetPipeline(vae=self.txt2img.vae,
           text_encoder=self.txt2img.text_encoder,
@@ -97,7 +97,7 @@ class SD:
           feature_extractor=None,
           requires_safety_checker=False)
           
-        log('cnok')
+        print('cnok')
         
         ######
         if self.mo:
@@ -127,7 +127,7 @@ class SD:
             requires_safety_checker=False,
         ).to('cuda')
         
-        log('loading sampler')
+        print('loading sampler')
         
         self.load_sampler('euler_a')
         
