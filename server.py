@@ -242,7 +242,7 @@ def imagine(args):
 	print(args)
 	sz = (args['width'],args['height'])
 	
-	image = Image.open(args['img_path']).convert('RGB').resize(sz)
+	#image = Image.open(args['img_path']).convert('RGB').resize(sz)
 	
 	if len(args['modules']) > 0:
 		log ('with control')
