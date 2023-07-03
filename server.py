@@ -244,7 +244,7 @@ def image_to_base64(img):
 # SD functions
 def imagine(args,variation):
 	log ('imagining')
-	print(args)
+	#print(args)
 	sz = (args['width'],args['height'])
 	
 	#image = Image.open(args['img_path']).convert('RGB').resize(sz)
