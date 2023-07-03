@@ -297,7 +297,7 @@ def cnetmodules(modules):
 	cscales = []
 	
 	if len(modules) == 1:
-		for cnet in args['modules']:
+		for cnet in modules:
 			cnets.append ( str(modules[cnet]['mode']) )
 			cscales = (float(modules[cnet]['scale']))
 			cnets_p.append(modules[cnet]['prepare'])
