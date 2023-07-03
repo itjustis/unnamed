@@ -33,6 +33,7 @@ cnet_dict = {
     'canny_edge': 'lllyasviel/control_v11p_sd15_canny',
     'soft_edge': 'lllyasviel/control_v11p_sd15_softedge',
     'shuffle': 'lllyasviel/control_v11e_sd15_shuffle'
+    'openpose': 'lllyasviel/control_v11p_sd15_openpose'
 }
 
 samplers_dict={
@@ -160,7 +161,8 @@ class SD:
         print('ok')
         
       if len(cnets_loaded)>1:
-        self[pipe].controlnet = MultiControlNetModel(cnets_loaded)
+        self.controlnet = MultiControlNetModel(cnets_loaded)
+        self.img2imgcontrolnet.controlnet = self.controlnet
         print('ok')
     
     def load_sampler(self,  sampler, torch_dtype=torch.float16):
