@@ -73,9 +73,9 @@ class SD:
     def interrogate(self, image,min_flavors=2,max_flavors=4):
         print('Interrogating.')
         
-        if self.ci:
-            return self.ci.interrogate(image,min_flavors,max_flavors)
-        else:
+        try:
+          return self.ci.interrogate(image,min_flavors,max_flavors)
+        except Exception as e:
           self.ci = Interrogator(Config(clip_model_name="ViT-L-14/openai"))
           print('Interrogator loaded.')
           return self.ci.interrogate(image,min_flavors,max_flavors)
