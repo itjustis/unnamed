@@ -78,7 +78,7 @@ class SD:
         self.txt2img.feature_extractor=None
         self.txt2img.requires_safety_checker=False
         
-        load_sampler(txt2img,'euler_a')
+        self.load_sampler(txt2img,'euler_a')
         
         tomesd.apply_patch(self.txt2img, ratio=0.5)
         
