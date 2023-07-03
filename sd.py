@@ -78,8 +78,6 @@ class SD:
         self.txt2img.feature_extractor=None
         self.txt2img.requires_safety_checker=False
         
-        
-        
         tomesd.apply_patch(self.txt2img, ratio=0.5)
         
         self.controlnet = StableDiffusionControlNetPipeline(vae=self.txt2img.vae,
@@ -152,7 +150,7 @@ class SD:
     
     def load_sampler(self,  sampler, torch_dtype=torch.float16):
       if sampler in samplers_dict:
-        self.txt2img.scheduler = samplers_dict[sampler].from_config(self.txt2img.scheduler.config,torch_dtype=torch_dtype).to('cuda')
+        self.txt2img.scheduler = samplers_dict[sampler].from_config(self.txt2img.scheduler.config,torch_dtype=torch_dtype)
         self.img2img.scheduler = self.txt2img.scheduler
         self.controlnet.scheduler = self.txt2img.scheduler
         self.img2imgcontrolnet.scheduler = self.txt2img.scheduler
