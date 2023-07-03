@@ -63,6 +63,7 @@ class SD:
         self.torch_dtype = torch_dtype
         self.mo = mo
         model_path = os.path.join(models_path,model_id)
+        self.model_path=model_path
         
         self.ci = Interrogator(Config(clip_model_name="ViT-L-14/openai"))
         print('ci loaded')
