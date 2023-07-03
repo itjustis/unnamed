@@ -65,6 +65,7 @@ class SD:
         self.mo = mo
         model_path = os.path.join(models_path,model_id)
         self.model_path=model_path
+        self.cn_loaded=[]
         
         self.init_models(model_path)
         self.clean()
@@ -145,25 +146,28 @@ class SD:
         
     def load_cnets(self, cnets, torch_dtype=torch.float16):
       cnets_loaded = []
-      for cnet in cnets:
-        if cnet in cnet_dict:
-            cnets_loaded.append(ControlNetModel.from_pretrained(cnet_dict[cnet], torch_dtype=torch_dtype).to('cuda'))
-        else:
-            print(cnet, 'not found')
-            
-      if len(cnets_loaded)==0:
-        self.controlnet.controlnet = None
-        self.img2imgcontrolnet.controlnet = self.controlnet.controlnet
-            
-      if len(cnets_loaded)==1:
-        self.controlnet.controlnet = cnets_loaded[0]
-        self.img2imgcontrolnet.controlnet = self.controlnet.controlnet
-        print('ok')
-        
-      if len(cnets_loaded)>1:
-        self.controlnet.controlnet = MultiControlNetModel(cnets_loaded)
-        self.img2imgcontrolnet.controlnet = self.controlnet
-        print('ok')
+      if self.cn_loaded != cnets:
+        for cnet in cnets:
+          if cnet in cnet_dict:
+              cnets_loaded.append(ControlNetModel.from_pretrained(cnet_dict[cnet], torch_dtype=torch_dtype).to('cuda'))
+          else:
+              print(cnet, 'not found')
+              
+        if len(cnets_loaded)==0:
+          self.controlnet.controlnet = None
+          self.img2imgcontrolnet.controlnet = self.controlnet.controlnet
+              
+        if len(cnets_loaded)==1:
+          self.controlnet.controlnet = cnets_loaded[0]
+          self.img2imgcontrolnet.controlnet = self.controlnet.controlnet
+          print('ok')
+          
+        if len(cnets_loaded)>1:
+          self.controlnet.controlnet = MultiControlNetModel(cnets_loaded)
+          self.img2imgcontrolnet.controlnet = self.controlnet
+          print('ok')
+      
+      self.cn_loaded = cnets
     
     def load_sampler(self,  sampler, torch_dtype=torch.float16):
       print('loading sampler',sampler)
