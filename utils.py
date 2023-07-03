@@ -6,7 +6,7 @@ from torchvision.transforms import ToPILImage, ToTensor
 import matplotlib.pyplot as plt
 from PIL import Image, ImageFilter, ImageDraw, ImageOps
 import cv2
-from controlnet_aux import  HEDdetector, ContentShuffleDetector
+from controlnet_aux import  HEDdetector, ContentShuffleDetector, OpenposeDetector
 
 
 
@@ -29,6 +29,11 @@ def cnet_prepare(controlnets,cnets_p, images, sz):
 			print(image,'saving')
 			
 			image.resize(sz).convert('RGB').save(image_path)
+
+def p_openpose(image):
+	processor = OpenposeDetector.from_pretrained('lllyasviel/ControlNet')
+	control_image = processor(image, hand_and_face=True)
+	return control_image
 	
 def p_shuffle(image):
 	shuffle_processor = ContentShuffleDetector()
