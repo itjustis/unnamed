@@ -238,51 +238,78 @@ def image_to_base64(img):
 	
 # SD functions
 def imagine(args):
-	return sd.txt2img(
-		args['prompt'],
-		width=args['width'],
-		height=args['height'],
-		num_inference_steps=int(args['steps']),
-		guidance_scale=float(args['scale']),
-		negative_prompt=args['negative_prompt']
-	)[0][0]
+	log ('imagining')
+	sz = (args['width'],args['height'])
+	image = Image.open(args['img_path']).convert('RGB').resize(sz)
+	
+	if len(args['modules']) > 0:
+		log ('with control')
+		cnet_images=args['cnet_images']
+		cnets,cscales,cnets_p = cnetmodules (args['modules'])
+		
+		sd.load_cnets(cnets)
+		
+		if(variation==0):
+			cnet_prepare(cnets_,cnets_p,cnet_images,sz)
+			
+		cnet_image_pils = []
+		
+		for img in cnet_images:
+			cnet_image_pils.append(Image.open(img));
+		
+		return sd.controlnet(
+			args['prompt'],
+			controlnet_conditioning_image=cnet_image_pils,
+			num_inference_steps=int(args['steps']),
+			guidance_scale=float(args['scale']),
+			negative_prompt=args['negative_prompt'],
+			strength=float(args['strength']),
+			controlnet_conditioning_scale=cscales
+		)[0][0]
+		
+	else:
+		return sd.txt2img(
+			args['prompt'],
+			width=args['width'],
+			height=args['height'],
+			num_inference_steps=int(args['steps']),
+			guidance_scale=float(args['scale']),
+			negative_prompt=args['negative_prompt']
+		)[0][0]
+
+def cnetmodules(modules):
+	cnets_p = []
+	cnets = []
+	cscales = []
+	
+	if len(modules) == 1:
+		for cnet in args['modules']:
+			cnets.append ( str(modules[cnet]['mode']) )
+			cscales = (float(modules[cnet]['scale']))
+			cnets_p.append(modules[cnet]['prepare'])
+					
+	else:	
+		for cnet in modules:
+			cnets.append((str(args['modules'][cnet]['mode'])))
+			cscales.append(float(args['modules'][cnet]['scale']))
+			cnets_p.append(args['modules'][cnet]['prepare'])
+			
+	return (cnets,cscales,cnets_p)
 	
 
 def overpaint(args,variation):
 	log ('overpainting with image at '+args['img_path'])
 	sz = (args['width'],args['height'])
 	image = Image.open(args['img_path']).convert('RGB').resize(sz)
-	cnets_n=[]
-	cnets_p=[]
-	cnets = []
-	cscales = []
-	cnet_images=args['cnet_images']
-	
 	
 	if len(args['modules']) > 0:
-		if len(args['modules']) == 1:
-			for cnet in args['modules']:
-				cnets =load_cnet( str(args['modules'][cnet]['mode']) )
-				sd.img2imgcontrolnet.controlnet =cnets
-				cscales = (float(args['modules'][cnet]['scale']))
-				cnets_n.append(str(args['modules'][cnet]['mode']))
-				cnets_p.append(args['modules'][cnet]['prepare'])
-						
-		else:
-			
-			
-			
-			for cnet in args['modules']:
-				cnets.append(load_cnet(str(args['modules'][cnet]['mode'])))
-				cscales.append(float(args['modules'][cnet]['scale']))
-				cnets_n.append(str(args['modules'][cnet]['mode']))
-				cnets_p.append(args['modules'][cnet]['prepare'])
-			
-			sd.img2imgcontrolnet.controlnet = MultiControlNetModel(cnets)
+		cnet_images=args['cnet_images']
+		cnets,cscales,cnets_p = cnetmodules (args['modules'])
+		
+		sd.load_cnets(cnets)
 		
 		if(variation==0):
-			print(cnets_n,cnets_p,cnet_images,sz)
-			cnet_prepare(cnets_n,cnets_p,cnet_images,sz)
+			cnet_prepare(cnets_,cnets_p,cnet_images,sz)
 			
 		cnet_image_pils = []
 		
@@ -299,7 +326,6 @@ def overpaint(args,variation):
 			strength=float(args['strength']),
 			controlnet_conditioning_scale=cscales
 		)[0][0]
-		log('oops')
 	else:
 		return sd.img2img(
 			args['prompt'],
@@ -335,7 +361,6 @@ def process_job(job):
 			image = Image.open(args['img_path']).convert('RGB')
 			args['prompt'] = sd.interrogate(image, min_flavors=2, max_flavors=4)
 			
-		
 			
 		for i in range(variations):
 			if variations>1 and i!=(variations-1):
