@@ -169,14 +169,20 @@ def create_task(task):
 			if args['modules'][cnet]['ref']['image']:
 				filename = process_cnet_image(args['modules'][cnet]['ref']['image'],filename)
 				cnet_images.append(filename)
+			else:
+				if (img_path):
+					Image.open(img_path).save(filename)
+					cnet_images.append(filename)
+				else:
+					print ('image for',cnet,'not found','was looking for it in img_path',img_path)
 		else:
 			if (img_path):
 				Image.open(img_path).save(filename)
 				cnet_images.append(filename)
 			else:
-				print ('image for',cnet,'not found')
+				print ('image for',cnet,'not found','was looking for it in img_path',img_path)
 			
-	print (cnet_images)
+	print ('# cnet_images #',cnet_images)
 			
 	args['cnet_images'] = cnet_images;
 
@@ -240,37 +246,44 @@ def image_to_base64(img):
 	buffered = BytesIO()
 	img.save(buffered, format="PNG")
 	return base64.b64encode(buffered.getvalue()).decode("utf-8")
+
+
+def cnet_init(args,variation):
+	sz = (args['width'],args['height'])
+	print('with control')
+	#print ('cnet_images',args['cnet_images'],sz)
+	cnet_images=[]
 	
+	cnets,cscales,cnets_p,cnet_images = cnetmodules (args['modules'])
+	
+	args['cnet_images'] = cnet_images
+	
+	
+	print('# loading cnets', cnets)
+	if (variation==0):
+		sd.load_cnets(cnets)
+		print('@@@ loaded', cnets)
+		
+		print('# preparing cnets')
+		cnet_images = cnet_prepare(cnets,cnets_p,cnet_images,sz)
+		args['cnet_images'] = cnet_images
+	
+	print('cnet_images are', cnet_images)
+	
+	cnet_image_pils = []
+	
+	for img in cnet_images :
+		print('# using cnet image #',img)
+		cnet_image_pils.append(Image.open(img));
+		
+	return cnet_image_pils, cscales
+
 # SD functions
 def imagine(args,variation):
-	log ('imagining')
-	#print(args)
-	sz = (args['width'],args['height'])
-	
-	#image = Image.open(args['img_path']).convert('RGB').resize(sz)
-	
+	print ('imagining')		
 	if len(args['modules']) > 0:
-		log ('with control')
-		print ('cnet_images',args['cnet_images'])
-		cnet_images=args['cnet_images']
-		cnets,cscales,cnets_p = cnetmodules (args['modules'])
-		
-		log('loading cnets')
-				
-		sd.load_cnets(cnets)
-		log('loaded')
-		
-		if(variation==0):
-			log('preparing')
-			cnet_prepare(cnets,cnets_p,cnet_images,sz)
-			
-		cnet_image_pils = []
-		
-		
-		for img in cnet_images:
-			cnet_image_pils.append(Image.open(img));
-		
-		log('generating...')
+		cnet_image_pils, cscales = cnet_init(args,variation)
+		print('generating... with:',cnet_image_pils, cscales)
 		return sd.controlnet(
 			args['prompt'],
 			image=cnet_image_pils,
@@ -294,20 +307,25 @@ def cnetmodules(modules):
 	cnets_p = []
 	cnets = []
 	cscales = []
+	images = []
 	
 	if len(modules) == 1:
 		for cnet in modules:
 			cnets.append ( str(modules[cnet]['mode']) )
 			cscales = (float(modules[cnet]['scale']))
 			cnets_p.append(modules[cnet]['prepare'])
+			images.append(os.path.join(temp_folder,str(cnet)+'_'+str(modules[cnet]['mode'])+'.png'))
 					
 	else:	
 		for cnet in modules:
 			cnets.append((str(modules[cnet]['mode'])))
 			cscales.append(float(modules[cnet]['scale']))
 			cnets_p.append(modules[cnet]['prepare'])
+			images.append(os.path.join(temp_folder,str(cnet)+'_'+str(modules[cnet]['mode'])+'.png'))
 			
-	return (cnets,cscales,cnets_p)
+	
+			
+	return (cnets,cscales,cnets_p,images)
 	
 
 def overpaint(args,variation):
@@ -358,10 +376,14 @@ def controlnet(args):
 # Function to process jobs
 def process_job(job):
 	try:
+		print('initializing args')
 		task = job['task']
 		args = job['args']
 		job_id = job["job_id"]
 		job_status[job_id]['status'] = "processing"
+		
+		print(args['variations'],args['steps'],args['scale'],args['width'],args['height'])
+		
 		variations = int(args['variations'])
 		
 		result = None
