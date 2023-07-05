@@ -253,7 +253,7 @@ def cnet_init(args,variation):
 	#print ('cnet_images',args['cnet_images'],sz)
 	cnet_images=[]
 	
-	cnets,cscales,cnets_p,cnet_images = cnetmodules (args['modules'])
+	cnets,cscales,cnets_p,cnet_images,og_images = cnetmodules (args['modules'])
 	
 	args['cnet_images'] = cnet_images
 	
@@ -264,7 +264,7 @@ def cnet_init(args,variation):
 		print('@@@ loaded', cnets)
 		
 		print('# preparing cnets')
-		cnet_images = cnet_prepare(cnets,cnets_p,cnet_images,sz)
+		cnet_images = cnet_prepare(cnets,cnets_p,og_images,sz)
 		args['cnet_images'] = cnet_images
 	
 	print('cnet_images are', cnet_images)
@@ -307,6 +307,7 @@ def cnetmodules(modules):
 	cnets = []
 	cscales = []
 	images = []
+	og_images=[]
 	
 	if len(modules) == 1:
 		for cnet in modules:
@@ -314,6 +315,7 @@ def cnetmodules(modules):
 			cscales = (float(modules[cnet]['scale']))
 			cnets_p.append(modules[cnet]['prepare'])
 			images.append(os.path.join(temp_folder,str(cnet)+'_'+str(modules[cnet]['mode'])+'.png'))
+			og_images.append(os.path.join(temp_folder,str(cnet))+'.png'))
 					
 	else:	
 		for cnet in modules:
@@ -321,10 +323,11 @@ def cnetmodules(modules):
 			cscales.append(float(modules[cnet]['scale']))
 			cnets_p.append(modules[cnet]['prepare'])
 			images.append(os.path.join(temp_folder,str(cnet)+'_'+str(modules[cnet]['mode'])+'.png'))
+			og_images.append(os.path.join(temp_folder,str(cnet))+'.png'))
 			
 	
 			
-	return (cnets,cscales,cnets_p,images)
+	return (cnets,cscales,cnets_p,images,og_images)
 	
 
 def overpaint(args,variation):
