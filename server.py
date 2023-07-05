@@ -102,8 +102,7 @@ worker_thread.start()
 # init
 if app_args.token:
 	conf.get_default().auth_token =  app_args.token
-##
-public_url = ngrok.connect(5000)
+	public_url = ngrok.connect(5000)
 
 app = Flask(__name__)
 app.debug = False
@@ -427,5 +426,8 @@ def process_job(job):
 
 if __name__ == "__main__":
 	clear()
-	log(public_url)
+	if app_args.token:
+		print(public_url)
+	else:
+		app.run(host='0.0.0.0', port=80)
 	app.run()
