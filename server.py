@@ -173,7 +173,7 @@ def create_task(task):
 					Image.open(img_path).save(filename)
 					cnet_images.append(filename)
 				else:
-					print ('image for',cnet,'not found','was looking for it in img_path',img_path)
+					print ('ref image for',cnet,'not found','was looking for it in img_path',img_path)
 		else:
 			if (img_path):
 				Image.open(img_path).save(filename)
@@ -277,31 +277,6 @@ def cnet_init(args,variation):
 		
 	return cnet_image_pils, cscales
 
-# SD functions
-def imagine(args,variation):
-	print ('imagining')		
-	if len(args['modules']) > 0:
-		cnet_image_pils, cscales = cnet_init(args,variation)
-		print('generating... with:',cnet_image_pils, cscales)
-		return sd.controlnet(
-			args['prompt'],
-			image=cnet_image_pils,
-			num_inference_steps=int(args['steps']),
-			guidance_scale=float(args['scale']),
-			negative_prompt=args['negative_prompt'],
-			controlnet_conditioning_scale=cscales
-		)[0][0]
-		
-	else:
-		return sd.txt2img(
-			args['prompt'],
-			width=args['width'],
-			height=args['height'],
-			num_inference_steps=int(args['steps']),
-			guidance_scale=float(args['scale']),
-			negative_prompt=args['negative_prompt']
-		)[0][0]
-
 def cnetmodules(modules):
 	cnets_p = []
 	cnets = []
@@ -328,7 +303,33 @@ def cnetmodules(modules):
 	
 			
 	return (cnets,cscales,cnets_p,images,og_images)
-	
+
+
+# SD functions
+def imagine(args,variation):
+	print ('imagining')		
+	if len(args['modules']) > 0:
+		cnet_image_pils, cscales = cnet_init(args,variation)
+		print('generating... with:',cnet_image_pils, cscales)
+		return sd.controlnet(
+			args['prompt'],
+			image=cnet_image_pils,
+			num_inference_steps=int(args['steps']),
+			guidance_scale=float(args['scale']),
+			negative_prompt=args['negative_prompt'],
+			controlnet_conditioning_scale=cscales
+		)[0][0]
+		
+	else:
+		return sd.txt2img(
+			args['prompt'],
+			width=args['width'],
+			height=args['height'],
+			num_inference_steps=int(args['steps']),
+			guidance_scale=float(args['scale']),
+			negative_prompt=args['negative_prompt']
+		)[0][0]
+
 
 def overpaint(args,variation):
 	log ('overpainting with image at '+args['img_path'])
@@ -336,19 +337,8 @@ def overpaint(args,variation):
 	image = Image.open(args['img_path']).convert('RGB').resize(sz)
 	
 	if len(args['modules']) > 0:
-		cnet_images=args['cnet_images']
-		cnets,cscales,cnets_p = cnetmodules (args['modules'])
-		
-		sd.load_cnets(cnets)
-		
-		if(variation==0):
-			cnet_prepare(cnets,cnets_p,cnet_images,sz)
-			
-		cnet_image_pils = []
-		
-		for img in cnet_images:
-			cnet_image_pils.append(Image.open(img));
-		
+		cnet_image_pils, cscales = cnet_init(args,variation)
+		print('generating... with:',cnet_image_pils, cscales)
 		return sd.img2imgcontrolnet(
 			args['prompt'],
 			image,
@@ -368,12 +358,6 @@ def overpaint(args,variation):
 			negative_prompt=args['negative_prompt'],
 			strength=float(args['strength'])
 		)[0][0]
-	
-def inpaint(args):
-	return None
-	
-def controlnet(args):
-	return None
 	
 # Function to process jobs
 def process_job(job):
