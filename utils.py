@@ -1,4 +1,4 @@
-import torch
+import torch, os
 import numpy as np
 from skimage import exposure
 from transformers import pipeline
@@ -8,15 +8,25 @@ from PIL import Image, ImageFilter, ImageDraw, ImageOps
 import cv2
 from controlnet_aux import  HEDdetector, ContentShuffleDetector, OpenposeDetector
 
+depth_estimator = pipeline('depth-estimation')
 
+def add_suffix(path, suffix):
+	base = os.path.splitext(path)[0]
+	ext = os.path.splitext(path)[1]
+	new_path = f"{base}{suffix}{ext}"
+	return new_path
 
-def cnet_prepare(controlnets,cnets_p, images, sz):
+def cnet_prepare(controlnets, cnets_p, image_paths, sz):
+	print('cnet_prepare')
+	print(controlnets, cnets_p, image_paths)
+	images = []
 	
-	for controlnet, prepare,image_path in zip(controlnets,cnets_p,images):
-		print ('prepare for', controlnet, 'is', prepare)
+	for controlnet, prepare, image_path in zip(controlnets,cnets_p,image_paths):
+		print ('#prepare# for', controlnet, 'is', prepare)
 		image = Image.open(image_path).resize(sz)
 
 		if prepare :
+			print ('# preparing #',controlnet)
 			if controlnet == 'depth':
 				image = p_depth(image)
 			elif controlnet == 'tile':
@@ -25,10 +35,18 @@ def cnet_prepare(controlnets,cnets_p, images, sz):
 				image = p_canny(image)
 			elif controlnet == 'soft_edge':
 				image = p_canny(image)
-				
-			print(image,'saving')
 			
-			image.resize(sz).convert('RGB').save(image_path)
+		image_path = add_suffix(image_path,'_'+controlnet)
+		
+		print("saving to ", image_path)
+		print('adding', image_path)
+		
+		image.resize(sz).convert('RGB').save(image_path)
+		images.append (image_path)
+	
+	return images
+		
+		
 
 def p_openpose(image):
 	processor = OpenposeDetector.from_pretrained('lllyasviel/ControlNet')
@@ -58,7 +76,7 @@ def p_canny(image):
 
 
 def p_depth(init_image):
-	depth_estimator = pipeline('depth-estimation')
+	
 
 	image = depth_estimator(init_image)['depth']
 	image = np.array(image)
