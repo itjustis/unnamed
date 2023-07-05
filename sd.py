@@ -85,14 +85,13 @@ class SD:
         self.txt2img = StableDiffusionPipeline.from_pretrained(
             model_path, torch_dtype=self.torch_dtype
         ).to('cuda')
-        print('checkers')
+        
         self.txt2img.safety_checker=None
         self.txt2img.feature_extractor=None
         self.txt2img.requires_safety_checker=False
-        print('tome')
-        
+
         tomesd.apply_patch(self.txt2img, ratio=0.5)
-        tomesd.apply_patch(self.txt2img, ratio=0.5)
+        #tomesd.apply_patch(self.txt2img, ratio=0.5)
         
         print('cn load')
         
