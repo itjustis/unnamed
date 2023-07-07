@@ -346,7 +346,7 @@ def overpaint(args,variation):
 			num_inference_steps=int(args['steps']),
 			guidance_scale=float(args['scale']),
 			negative_prompt=args['negative_prompt'],
-			strength=float(args['strength']),
+			strength=float(args['strength'])/100.,
 			controlnet_conditioning_scale=cscales
 		)[0][0]
 	else:
@@ -356,7 +356,7 @@ def overpaint(args,variation):
 			num_inference_steps=int(args['steps']),
 			guidance_scale=float(args['scale']),
 			negative_prompt=args['negative_prompt'],
-			strength=float(args['strength'])
+			strength=float(args['strength']/100.)
 		)[0][0]
 	
 # Function to process jobs
