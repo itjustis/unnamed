@@ -199,21 +199,25 @@ def upscale_image(image_path, upscale_factor=4, padding_size=768):
 
 	return img_extended, (width, height), img_upscaled.size
 
-def color_match(prev_img,color_match_sample):
-  prev_img = cv2.cvtColor(prev_img, cv2.COLOR_RGB2BGR)
-  prev_img_lab = cv2.cvtColor(prev_img, cv2.COLOR_BGR2LAB)
-  
-  color_match_sample = cv2.cvtColor(color_match_sample, cv2.COLOR_RGB2BGR)
-  color_match_lab = cv2.cvtColor(color_match_sample, cv2.COLOR_BGR2LAB)
-  
-  matched_lab = exposure.match_histograms(prev_img_lab, color_match_lab)
-  
-  # Convert float64 to uint8 before color conversion
-  matched_lab = (matched_lab).astype(np.uint8)
-  
-  matched_rgb = cv2.cvtColor(matched_lab, cv2.COLOR_LAB2BGR)
-  
-  return cv2.cvtColor(matched_rgb, cv2.COLOR_BGR2RGB)
+def color_match(prev_img, color_match_sample):
+	prev_img = cv2.cvtColor(prev_img, cv2.COLOR_RGB2BGR)
+	prev_img_lab = cv2.cvtColor(prev_img, cv2.COLOR_BGR2LAB)
+	
+	color_match_sample = cv2.cvtColor(color_match_sample, cv2.COLOR_RGB2BGR)
+	color_match_lab = cv2.cvtColor(color_match_sample, cv2.COLOR_BGR2LAB)
+	
+	matched_lab = exposure.match_histograms(prev_img_lab, color_match_lab, multichannel=True)
+	
+	# Convert float64 to uint8 before color conversion
+	matched_lab = (matched_lab).astype(np.uint8)
+	
+	matched_rgb = cv2.cvtColor(matched_lab, cv2.COLOR_LAB2BGR)
+	
+	# Apply Gaussian blur to smooth the harsh transitions
+	smoothed_matched_rgb = cv2.GaussianBlur(matched_rgb, (5, 5), 0)
+	
+	return cv2.cvtColor(smoothed_matched_rgb, cv2.COLOR_BGR2RGB)
+
 
 def add_noise(tensor, mean=0., std=1.):
 	"""
