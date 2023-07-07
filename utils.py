@@ -159,7 +159,7 @@ def process_tiles(pipe, controlnets, cn_scales, img_upscaled, original_size, pro
 def matchc(y,x):
   arr_x = np.array(x)
   pre = np.array(y)
-  matched = color_match(pre,  arr_x )
+  matched = color_match(  arr_x , pre)
   return Image.fromarray(matched).convert('RGB')
 
 
@@ -201,9 +201,9 @@ def upscale_image(image_path, upscale_factor=4, padding_size=768):
 
 def color_match(prev_img,color_match_sample):
   prev_img = cv2.cvtColor(prev_img, cv2.COLOR_RGB2BGR)
-  color_match_sample = cv2.cvtColor(color_match_sample, cv2.COLOR_RGB2BGR)
-  
   prev_img_lab = cv2.cvtColor(prev_img, cv2.COLOR_BGR2LAB)
+  
+  color_match_sample = cv2.cvtColor(color_match_sample, cv2.COLOR_RGB2BGR)
   color_match_lab = cv2.cvtColor(color_match_sample, cv2.COLOR_BGR2LAB)
   
   matched_lab = exposure.match_histograms(prev_img_lab, color_match_lab)
