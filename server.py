@@ -290,15 +290,15 @@ def cnetmodules(modules,job_id):
 			cscales = (float(modules[cnet]['scale']))
 			cnets_p.append(modules[cnet]['prepare'])
 			images.append(os.path.join(temp_folder,str(job_id)+'_'+str(cnet)+'_'+str(modules[cnet]['mode']+'.png')))
-			og_images.append( os.path.join(temp_folder,str(cnet)+'.png')  )
+			og_images.append( os.path.join(temp_folder,str(job_id)+'_'+str(cnet)+'.png')  )
 					
 	else:	
 		for cnet in modules:
 			cnets.append((str(modules[cnet]['mode'])))
 			cscales.append(float(modules[cnet]['scale']))
 			cnets_p.append(modules[cnet]['prepare'])
-			images.append(os.path.join(temp_folder,str(cnet)+'_'+str(modules[cnet]['mode']+'.png')))
-			og_images.append( os.path.join(temp_folder,str(cnet)+'.png')  )
+			images.append(os.path.join(temp_folder,str(job_id)+'_'+str(cnet)+'_'+str(modules[cnet]['mode']+'.png')))
+			og_images.append( os.path.join(temp_folder,str(job_id)+'_'+str(cnet)+'.png')  )
 			
 	
 			
