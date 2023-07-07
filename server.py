@@ -7,7 +7,7 @@ from PIL import Image
 from IPython import display as disp
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_controlnet import MultiControlNetModel
 from sd import SD, download_models
-from utils import cnet_prepare
+from utils import cnet_prepare, matchc
 
 job_queue = queue.Queue()
 job_status = {}
