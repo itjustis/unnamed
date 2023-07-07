@@ -156,10 +156,10 @@ def process_tiles(pipe, controlnets, cn_scales, img_upscaled, original_size, pro
 	return img_processed
 
 
-def matchc(x,y):
-  remapped_np = np.array(x)
-  prev_np = np.array(y)
-  matched = color_match(remapped_np, np.array(x))
+def matchc(y,x):
+  arr_x = np.array(x)
+  pre = np.array(y)
+  matched = color_match(pre,  arr_x )
   return Image.fromarray(matched)
 
 
