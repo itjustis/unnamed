@@ -199,21 +199,26 @@ def upscale_image(image_path, upscale_factor=4, padding_size=768):
 
 	return img_extended, (width, height), img_upscaled.size
 
-def color_match(prev_img,color_match_sample):
+def color_match(prev_img, color_match_sample):
 	prev_img = cv2.cvtColor(prev_img, cv2.COLOR_RGB2BGR)
 	color_match_sample = cv2.cvtColor(color_match_sample, cv2.COLOR_RGB2BGR)
 	
-	prev_img_lab = cv2.cvtColor(prev_img, cv2.COLOR_BGR2LAB)
-	color_match_lab = cv2.cvtColor(color_match_sample, cv2.COLOR_BGR2LAB)
+	prev_img_lab = cv2.cvtColor(prev_img, cv2.COLOR_BGR2LAB).astype('float64')
+	color_match_lab = cv2.cvtColor(color_match_sample, cv2.COLOR_BGR2LAB).astype('float64')
 	
-	matched_lab = exposure.match_histograms(prev_img_lab, color_match_lab, channel_axis=2)
+	# Perform histogram matching only on the luminance channel
+	matched_L = exposure.match_histograms(prev_img_lab[:, :, 0], color_match_lab[:, :, 0])
+	
+	# Replace the L channel in the original image with the matched L channel
+	matched_lab = prev_img_lab
+	matched_lab[:, :, 0] = matched_L
 	
 	# Convert float64 to uint8
 	matched_lab = cv2.normalize(matched_lab, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
 	
-	matched_rgb = cv2.cvtColor(matched_lab, cv2.COLOR_LAB2BGR)
+	matched_bgr = cv2.cvtColor(matched_lab, cv2.COLOR_LAB2BGR)
 	
-	return cv2.cvtColor(matched_rgb, cv2.COLOR_BGR2RGB)
+	return cv2.cvtColor(matched_bgr, cv2.COLOR_BGR2RGB)
 
 def add_noise(tensor, mean=0., std=1.):
 	"""
