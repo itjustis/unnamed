@@ -392,7 +392,7 @@ def process_job(job):
 			if task == 'imagine':
 				result = imagine(args,i,job_id)
 			elif task == 'overpaint':
-				result = overpaint(args,i,job_id)
+				result = matchc(Image.open(args['img_path']).convert('RGB'), overpaint(args,i,job_id) )
 			elif task == 'inpaint':
 				result = inpaint(args)
 				
