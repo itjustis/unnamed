@@ -206,7 +206,7 @@ def color_match(prev_img,color_match_sample):
 	prev_img_lab = cv2.cvtColor(prev_img, cv2.COLOR_BGR2LAB)
 	color_match_lab = cv2.cvtColor(color_match_sample, cv2.COLOR_BGR2LAB)
 	
-	matched_lab = exposure.match_histograms(prev_img_lab, color_match_lab, multichannel=True)
+	matched_lab = exposure.match_histograms(prev_img_lab, color_match_lab)
 	
 	# Convert float64 to uint8
 	matched_lab = cv2.normalize(matched_lab, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
