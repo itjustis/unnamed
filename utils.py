@@ -202,7 +202,7 @@ def upscale_image(image_path, upscale_factor=4, padding_size=768):
 def color_match(prev_img,color_match_sample):
   prev_img_lab = cv2.cvtColor(prev_img, cv2.COLOR_RGB2LAB)
   color_match_lab = cv2.cvtColor(color_match_sample, cv2.COLOR_RGB2LAB)
-  matched_lab = exposure.match_histograms(prev_img_lab.astype('uint8'), color_match_lab.astype('uint8'))
+  matched_lab = exposure.match_histograms(prev_img_lab, color_match_lab,2)
   return cv2.cvtColor(matched_lab, cv2.COLOR_LAB2RGB)
 
 def add_noise(tensor, mean=0., std=1.):
