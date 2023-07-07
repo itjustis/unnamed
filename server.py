@@ -163,7 +163,7 @@ def create_task(task):
 		
 	cnet_images=[]
 	for cnet in args['modules']:
-		filename = f"temp/{cnet}.png";
+		filename = f"temp/{job_id}_{cnet}.png";
 		if args['modules'][cnet]['ref']:
 			if args['modules'][cnet]['ref']['image']:
 				filename = process_cnet_image(args['modules'][cnet]['ref']['image'],filename)
@@ -247,13 +247,13 @@ def image_to_base64(img):
 	return base64.b64encode(buffered.getvalue()).decode("utf-8")
 
 
-def cnet_init(args,variation):
+def cnet_init(args,variation,job_id):
 	sz = (args['width'],args['height'])
 	print('with control')
 	#print ('cnet_images',args['cnet_images'],sz)
 	cnet_images=[]
 	
-	cnets,cscales,cnets_p,cnet_images,og_images = cnetmodules (args['modules'])
+	cnets,cscales,cnets_p,cnet_images,og_images = cnetmodules (args['modules'],job_id)
 	
 	args['cnet_images'] = cnet_images
 	
@@ -277,7 +277,7 @@ def cnet_init(args,variation):
 		
 	return cnet_image_pils, cscales
 
-def cnetmodules(modules):
+def cnetmodules(modules,job_id):
 	cnets_p = []
 	cnets = []
 	cscales = []
@@ -289,7 +289,7 @@ def cnetmodules(modules):
 			cnets.append ( str(modules[cnet]['mode']) )
 			cscales = (float(modules[cnet]['scale']))
 			cnets_p.append(modules[cnet]['prepare'])
-			images.append(os.path.join(temp_folder,str(cnet)+'_'+str(modules[cnet]['mode']+'.png')))
+			images.append(os.path.join(temp_folder,str(job_id)+'_'+str(cnet)+'_'+str(modules[cnet]['mode']+'.png')))
 			og_images.append( os.path.join(temp_folder,str(cnet)+'.png')  )
 					
 	else:	
@@ -306,10 +306,10 @@ def cnetmodules(modules):
 
 
 # SD functions
-def imagine(args,variation):
+def imagine(args,variation,job_id):
 	print ('imagining')		
 	if len(args['modules']) > 0:
-		cnet_image_pils, cscales = cnet_init(args,variation)
+		cnet_image_pils, cscales = cnet_init(args,variation,job_id)
 		print('generating... with:',cnet_image_pils, cscales)
 		return sd.controlnet(
 			args['prompt'],
@@ -331,13 +331,13 @@ def imagine(args,variation):
 		)[0][0]
 
 
-def overpaint(args,variation):
+def overpaint(args,variation,job_id):
 	log ('overpainting with image at '+args['img_path'])
 	sz = (args['width'],args['height'])
 	image = Image.open(args['img_path']).convert('RGB').resize(sz)
 	
 	if len(args['modules']) > 0:
-		cnet_image_pils, cscales = cnet_init(args,variation)
+		cnet_image_pils, cscales = cnet_init(args,variation,job_id)
 		print('generating... with:',cnet_image_pils, cscales)
 		return sd.img2imgcontrolnet(
 			args['prompt'],
@@ -390,9 +390,9 @@ def process_job(job):
 					   divider = ''
 			log('generating image #'+str(i))
 			if task == 'imagine':
-				result = imagine(args,i)
+				result = imagine(args,i,job_id)
 			elif task == 'overpaint':
-				result = overpaint(args,i)
+				result = overpaint(args,i,job_id)
 			elif task == 'inpaint':
 				result = inpaint(args)
 				
