@@ -17,6 +17,7 @@ import subprocess
 parser = argparse.ArgumentParser(description="Run Flask app with Ngrok")
 parser.add_argument("--token", type=str, help="Use Ngrok auth token")
 parser.add_argument("--models_path", type=str, default='/content/models/', help="Path to models directory")
+parser.add_argument("--model", type=str, default='stablediffusionapi/epicrealism', help="diffusers model repo")
 parser.add_argument("--log", action="store_true", help="log mode")
 
 app_args = parser.parse_args()
@@ -29,9 +30,9 @@ if not os.path.exists(models_path):
 if not os.path.exists(temp_folder):
 	os.makedirs(temp_folder)
 
-available_models = [
+available_models = [app_args.model
 	#'CompVis/stable-diffusion-v1-4',
-	'stablediffusionapi/epicrealism'
+	#'stablediffusionapi/epicrealism'
 	#'runwayml/stable-diffusion-v1-5',
 	#'dreamlike-art/dreamlike-photoreal-2.0',
 	#''
