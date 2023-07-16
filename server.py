@@ -377,10 +377,12 @@ def process_job(job):
 		divider = ''
 			
 		log('variations: '+str(variations))
-		
+		prompti = ""
 		if args['prompt'] == "":
 			image = Image.open(args['img_path']).convert('RGB')
-			args['prompt'] = sd.interrogate(image, min_flavors=2, max_flavors=4)
+			prompti = sd.interrogate(image, min_flavors=2, max_flavors=4)
+			args['prompt'] = prompti
+			
 			
 			
 		for i in range(variations):
@@ -404,8 +406,11 @@ def process_job(job):
 			b64_result+=image_to_base64(result.convert('RGB'))+divider
 	
 		if result is not None:
-			
-			job_status[job['job_id']] = {"status": "completed", "result": b64_result}
+			if (prompti!=""):
+				job_status[job['job_id']] = {"status": "completed", "result": b64_result,"prompt":prompti}
+			else:
+				job_status[job['job_id']] = {"status": "completed", "result": b64_result}
+				
 		else:
 			job_status[job['job_id']] = {"status": "failed"}
 	except Exception as e:
