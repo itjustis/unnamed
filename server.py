@@ -58,7 +58,7 @@ job_status = {}
 available_models = ['model1', 'model2', 'model3']
 
 
-def save_image_from_b64(b64_string, folder, filename):
+def save_image_from_b64(b64_string, folder, filename,sz):
 	print(b64_string)
 	img_data = base64.urlsafe_b64decode(b64_string)
 	img_file_path = os.path.join(folder, filename)
@@ -68,7 +68,7 @@ def save_image_from_b64(b64_string, folder, filename):
 		raw_file.write(img_data)
 	
 	try:
-		img = Image.open(BytesIO(img_data))
+		img = Image.open(BytesIO(img_data)).resize(sz).convert('RGB')
 		img_path = os.path.join(folder, filename)
 		img.save(img_path)
 		return img_path
