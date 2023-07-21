@@ -274,7 +274,7 @@ def cnet_init(args,variation,job_id):
 	
 	for img in cnet_images :
 		print('# using cnet image #',img)
-		cnet_image_pils.append(Image.open(img));
+		cnet_image_pils.append(Image.open(img).resize(sz));
 		
 	return cnet_image_pils, cscales
 
