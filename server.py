@@ -153,6 +153,8 @@ def create_task(task):
 	job_id = job_data['id']
 	sz = [args['width'],args['height']]
 
+	print('### sz is ###',sz)
+
 	# Log request data for debugging.
 	log(f"Task: {task}")
 	
@@ -250,7 +252,7 @@ def image_to_base64(img):
 
 
 def cnet_init(args,variation,job_id):
-	sz = (args['width'],args['height'])
+	sz = (args['resolution']['width'],args['resolution']['height'])
 	print('with control')
 	#print ('cnet_images',args['cnet_images'],sz)
 	cnet_images=[]
@@ -274,8 +276,9 @@ def cnet_init(args,variation,job_id):
 	cnet_image_pils = []
 	
 	for img in cnet_images :
+		img = Image.open(img).resize(sz)
 		print('# using cnet image #',img)
-		cnet_image_pils.append(Image.open(img).resize(sz));
+		cnet_image_pils.append(img);
 		
 	return cnet_image_pils, cscales
 
