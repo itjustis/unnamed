@@ -273,7 +273,7 @@ def cnet_init(args,variation,job_id):
 	
 	for img in cnet_images :
 		print('# using cnet image #',img)
-		cnet_image_pils.append(Image.open(img));
+		cnet_image_pils.append(Image.open(img).resize(sz);
 		
 	return cnet_image_pils, cscales
 
@@ -334,6 +334,7 @@ def imagine(args,variation,job_id):
 def overpaint(args,variation,job_id):
 	log ('overpainting with image at '+args['img_path'])
 	sz = (args['width'],args['height'])
+	print ('sz is',sz)
 	image = Image.open(args['img_path']).convert('RGB').resize(sz)
 	
 	if len(args['modules']) > 0:
