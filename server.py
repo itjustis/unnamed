@@ -151,6 +151,7 @@ def create_task(task):
 	job_data = request.get_json()
 	args = job_data['args']
 	job_id = job_data['id']
+	sz = [args['width'],args['height']]
 
 	# Log request data for debugging.
 	log(f"Task: {task}")
@@ -171,13 +172,13 @@ def create_task(task):
 				cnet_images.append(filename)
 			else:
 				if (img_path):
-					Image.open(img_path).save(filename)
+					Image.open(img_path).resize(sz).convert('RGB').save(filename)
 					cnet_images.append(filename)
 				else:
 					print ('ref image for',cnet,'not found','was looking for it in img_path',img_path)
 		else:
 			if (img_path):
-				Image.open(img_path).save(filename)
+				Image.open(img_path).resize(sz).convert('RGB').save(filename)
 				cnet_images.append(filename)
 			else:
 				print ('image for',cnet,'not found','was looking for it in img_path',img_path)
