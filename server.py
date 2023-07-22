@@ -319,8 +319,8 @@ def imagine(args,variation,job_id):
 		return sd.controlnet(
 			args['prompt'],
 			image=cnet_image_pils,
-			num_inference_steps=int(args['steps']),
-			guidance_scale=float(args['scale']),
+			num_inference_steps=int(args['generation']['steps']),
+			guidance_scale=float(args['generation']['scale']),
 			negative_prompt=args['negative_prompt'],
 			controlnet_conditioning_scale=cscales
 		)[0][0]
