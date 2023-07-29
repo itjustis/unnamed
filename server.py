@@ -151,7 +151,8 @@ def create_task(task):
 	job_data = request.get_json()
 	args = job_data['args']
 	job_id = job_data['id']
-	sz = [args['width'],args['height']]
+	
+	sz = [args['resolution']['width'],args['resolution']['height']]
 
 	print('### sz is ###',sz)
 
