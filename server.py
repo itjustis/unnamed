@@ -339,7 +339,7 @@ def imagine(args,variation,job_id):
 
 def overpaint(args,variation,job_id):
 	log ('overpainting with image at '+args['img_path'])
-	sz = (arg['resolution']s['width'],args['resolution']['height'])
+	sz = (arg['resolution']['width'],args['resolution']['height'])
 	image = Image.open(args['img_path']).convert('RGB').resize(sz)
 	
 	if len(args['modules']) > 0:
