@@ -12,8 +12,6 @@ from utils import cnet_prepare, matchc
 job_queue = queue.Queue()
 job_status = {}
 
-import subprocess
-
 parser = argparse.ArgumentParser(description="Run Flask app with Ngrok")
 parser.add_argument("--token", type=str, help="Use Ngrok auth token")
 parser.add_argument("--models_path", type=str, default='/content/models/', help="Path to models directory")
@@ -163,7 +161,7 @@ def create_task(task):
 		
 	cnet_images=[]
 	for cnet in args['modules']:
-		filename = f"temp/{job_id}_{cnet}.png";
+		filename = f"temp/{job_id}_{cnet}.png"
 		if args['modules'][cnet]['ref']:
 			if args['modules'][cnet]['ref']['image']:
 				filename = process_cnet_image(args['modules'][cnet]['ref']['image'],filename)
