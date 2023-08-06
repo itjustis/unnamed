@@ -91,7 +91,7 @@ class SD:
         self.txt2img.requires_safety_checker=False
 
         tomesd.apply_patch(self.txt2img, ratio=0.5)
-        #tomesd.apply_patch(self.txt2img, ratio=0.5)
+        tomesd.apply_patch(self.txt2img, ratio=0.5)
         
         print('cn load')
         
