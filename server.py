@@ -312,8 +312,8 @@ def imagine(args,variation,job_id):
 		return sd.controlnet(
 			args['prompt'],
 			image=cnet_image_pils,
-			num_inference_steps=int(args['steps']),
-			guidance_scale=float(args['scale']),
+			num_inference_steps=int(args['generation']['steps']),
+			guidance_scale=float(args['generation']['scale']),
 			negative_prompt=args['negative_prompt'],
 			controlnet_conditioning_scale=cscales
 		)[0][0]
@@ -323,8 +323,8 @@ def imagine(args,variation,job_id):
 			args['prompt'],
 			width=args['width'],
 			height=args['height'],
-			num_inference_steps=int(args['steps']),
-			guidance_scale=float(args['scale']),
+			num_inference_steps=int(args['generation']['steps']),
+			guidance_scale=float(args['generation']['scale']),
 			negative_prompt=args['negative_prompt']
 		)[0][0]
 
@@ -342,8 +342,8 @@ def overpaint(args,variation,job_id):
 			args['prompt'],
 			image,
 			controlnet_conditioning_image=cnet_image_pils,
-			num_inference_steps=int(args['steps']),
-			guidance_scale=float(args['scale']),
+			num_inference_steps=int(args['generation']['steps']),
+			guidance_scale=float(args['generation']['scale']),
 			negative_prompt=args['negative_prompt'],
 			strength=float(args['strength'])/100.,
 			controlnet_conditioning_scale=cscales
@@ -352,8 +352,8 @@ def overpaint(args,variation,job_id):
 		return sd.img2img(
 			args['prompt'],
 			image,
-			num_inference_steps=int(args['steps']),
-			guidance_scale=float(args['scale']),
+			num_inference_steps=int(args['generation']['steps']),
+			guidance_scale=float(args['generation']['scale']),
 			negative_prompt=args['negative_prompt'],
 			strength=float(args['strength']/100.)
 		)[0][0]
@@ -367,7 +367,7 @@ def process_job(job):
 		job_id = job["job_id"]
 		job_status[job_id]['status'] = "processing"
 		
-		print(args['variations'],args['steps'],args['scale'],args['width'],args['height'])
+		print(args['variations'],args['generation']['steps'],args['generation']['scale'],args['resolution']['width'],args['resolution']['height'])
 		
 		variations = int(args['variations'])
 		
