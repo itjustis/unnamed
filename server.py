@@ -152,7 +152,7 @@ def create_task(task):
 	args = job_data['args']
 	job_id = job_data['id']
 	
-	sz = [args['width'],args['height']]
+	sz = [args['resolution']['width'],args['resolution']['height']]
 
 	print('### sz is ###',sz)
 
@@ -253,7 +253,7 @@ def image_to_base64(img):
 
 
 def cnet_init(args,variation,job_id):
-	sz = (args['width'],args['height'])
+	sz = (args['resolution']['width'],args['resolution']['height'])
 	print('with control')
 	#print ('cnet_images',args['cnet_images'],sz)
 	cnet_images=[]
@@ -293,7 +293,7 @@ def cnetmodules(modules,job_id):
 	if len(modules) == 1:
 		for cnet in modules:
 			cnets.append ( str(modules[cnet]['mode']) )
-			cscales = (float(modules[cnet]['scale']))
+			cscales = (float(modules[cnet]['generation']['scale']))
 			cnets_p.append(modules[cnet]['prepare'])
 			images.append(os.path.join(temp_folder,str(job_id)+'_'+str(cnet)+'_'+str(modules[cnet]['mode']+'.png')))
 			og_images.append( os.path.join(temp_folder,str(job_id)+'_'+str(cnet)+'.png')  )
@@ -301,7 +301,7 @@ def cnetmodules(modules,job_id):
 	else:	
 		for cnet in modules:
 			cnets.append((str(modules[cnet]['mode'])))
-			cscales.append(float(modules[cnet]['scale']))
+			cscales.append(float(modules[cnet]['generation']['scale']))
 			cnets_p.append(modules[cnet]['prepare'])
 			images.append(os.path.join(temp_folder,str(job_id)+'_'+str(cnet)+'_'+str(modules[cnet]['mode']+'.png')))
 			og_images.append( os.path.join(temp_folder,str(job_id)+'_'+str(cnet)+'.png')  )
@@ -320,8 +320,8 @@ def imagine(args,variation,job_id):
 		return sd.controlnet(
 			args['prompt'],
 			image=cnet_image_pils,
-			num_inference_steps=int(args['steps']),
-			guidance_scale=float(args['scale']),
+			num_inference_steps=int(args['generation']['steps']),
+			guidance_scale=float(args['generation']['scale']),
 			negative_prompt=args['negative_prompt'],
 			controlnet_conditioning_scale=cscales
 		)[0][0]
@@ -329,17 +329,17 @@ def imagine(args,variation,job_id):
 	else:
 		return sd.txt2img(
 			args['prompt'],
-			width=args['width'],
-			height=args['height'],
-			num_inference_steps=int(args['steps']),
-			guidance_scale=float(args['scale']),
+			width=args['resolution']['width'],
+			height=args['resolution']['height'],
+			num_inference_steps=int(args['generation']['steps']),
+			guidance_scale=float(args['generation']['scale']),
 			negative_prompt=args['negative_prompt']
 		)[0][0]
 
 
 def overpaint(args,variation,job_id):
 	log ('overpainting with image at '+args['img_path'])
-	sz = (args['width'],args['height'])
+	sz = (arg['resolution']s['width'],args['resolution']['height'])
 	image = Image.open(args['img_path']).convert('RGB').resize(sz)
 	
 	if len(args['modules']) > 0:
@@ -349,8 +349,8 @@ def overpaint(args,variation,job_id):
 			args['prompt'],
 			image,
 			controlnet_conditioning_image=cnet_image_pils,
-			num_inference_steps=int(args['steps']),
-			guidance_scale=float(args['scale']),
+			num_inference_steps=int(args['generation']['steps']),
+			guidance_scale=float(args['generation']['scale']),
 			negative_prompt=args['negative_prompt'],
 			strength=float(args['strength'])/100.,
 			controlnet_conditioning_scale=cscales
@@ -359,8 +359,8 @@ def overpaint(args,variation,job_id):
 		return sd.img2img(
 			args['prompt'],
 			image,
-			num_inference_steps=int(args['steps']),
-			guidance_scale=float(args['scale']),
+			num_inference_steps=int(args['generation']['steps']),
+			guidance_scale=float(args['generation']['scale']),
 			negative_prompt=args['negative_prompt'],
 			strength=float(args['strength']/100.)
 		)[0][0]
@@ -374,7 +374,6 @@ def process_job(job):
 		job_id = job["job_id"]
 		job_status[job_id]['status'] = "processing"
 		
-		print(args['variations'],args['steps'],args['scale'],args['width'],args['height'])
 		
 		variations = int(args['variations'])
 		
