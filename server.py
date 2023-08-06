@@ -183,7 +183,7 @@ def create_task(task):
 			
 	print ('# cnet_images #',cnet_images)
 			
-	args['cnet_images'] = cnet_images;
+	args['cnet_images'] = cnet_images
 
 	# Create a job object and put it in the queue.
 	job = create_job(args, job_id, img_path, task)
@@ -273,7 +273,7 @@ def cnet_init(args,variation,job_id):
 	
 	for img in cnet_images :
 		print('# using cnet image #',img)
-		cnet_image_pils.append(Image.open(img).resize(sz);
+		cnet_image_pils.append(Image.open(img).resize(sz))
 		
 	return cnet_image_pils, cscales
 
