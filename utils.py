@@ -31,6 +31,8 @@ def cnet_prepare(controlnets, cnets_p, image_paths, sz):
 				image = p_depth(image)
 			elif controlnet == 'tile':
 				image = p_tile(image, image.size[0])
+			elif controlnet == 'content':
+				image = p_tile(image, image.size[0])
 			elif controlnet == 'canny_edge':
 				image = p_canny(image)
 			elif controlnet == 'soft_edge':
