@@ -138,7 +138,7 @@ class SD:
         
         print('loading sampler')
         
-        self.load_sampler('euler_a')
+        self.load_sampler('unipcm')
         
         #### .enable_xformers_memory_efficient_attention()
 
