@@ -157,7 +157,7 @@ def process_tiles(seed, pipe, controlnets, cn_scales, img_upscaled, original_siz
 
 				tile = matchc(itile,tile)
 				tile.save('temp_tile.png')
-				img_upscaled.paste(tile, (left, upper), mask=ImageOps.invert(Image.open('tmask.png')).convert('L'))
+				img_upscaled.paste(tile, (left, upper), mask=ImageOps.invert(Image.open('tmask.png').resize((tile_size,tile_size))).convert('L'))
 
 
 	img_processed = crop_image( img_upscaled, tile_size//6)
