@@ -137,6 +137,7 @@ def process_tiles(seed, pipe, controlnets, cn_scales, img_upscaled, original_siz
 				if len(condition_image)== 1:
 					conditions = Image.open(condition_image[0])
 				if len(condition_image) > 1:
+					print('condition_image len:',len(condition_image))
 					conditions =[]
 					for cond in condition_image:
 						conditions.append(Image.open(cond))
@@ -144,6 +145,9 @@ def process_tiles(seed, pipe, controlnets, cn_scales, img_upscaled, original_siz
 				itile = tile
 
 				generator = torch.manual_seed(seed)
+				print(tile.size)
+				print('cn_scales',cn_scales)
+				print('conditions',conditions)
 
 				tile = pipe.img2imgcontrolnet(prompt=prompt,
 					  negative_prompt= negative,
