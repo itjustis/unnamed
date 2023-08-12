@@ -129,8 +129,13 @@ def process_tiles(seed, pipe, controlnets, cn_scales, img_upscaled, original_siz
 				
 				###need to fix
 				tile.save('temp_tile_pre.png')
+				cpre = []
+				cim = []
+				for cci in range(len(controlnets)):
+					cim.append('temp_tile_pre.png')
+					cpre.append(True)
 
-				condition_image = cnet_prepare(controlnets, [True,True], ['temp_tile_pre.png','temp_tile_pre.png'],[tile_size,tile_size])
+				condition_image = cnet_prepare(controlnets, cpre, csim,[tile_size,tile_size])
 
 				conditions = condition_image
 
