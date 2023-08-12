@@ -45,8 +45,6 @@ def cnet_prepare(controlnets, cnets_p, image_paths, sz):
 		images.append (image_path)
 	
 	return images
-		
-		
 
 def p_openpose(image):
 	processor = OpenposeDetector.from_pretrained('lllyasviel/ControlNet')
@@ -76,8 +74,6 @@ def p_canny(image):
 
 
 def p_depth(init_image):
-	
-
 	image = depth_estimator(init_image)['depth']
 	image = np.array(image)
 	image = image[:, :, None]
@@ -97,13 +93,13 @@ def p_tile(input_image: Image, resolution: int):
 	return img
 
 
-def tile_upscale(image_path,upr,prompt,negative,pipe,controlnets,cn_scales,tile_size=768, shift=0.333,steps=25,scale=7.5,strength=0.666,interrogate=False):
+def tile_upscale(sd,image_path,upr,prompt,negative,pipe,controlnets,cn_scales,tile_size=768, shift=0.333,steps=25,scale=7.5,strength=0.666,interrogate=False):
 	img_upscaled , original_size , upscaled_size= upscale_image(image_path,upr)
 	img_upscaled = img_upscaled.convert('RGB')
-	result = process_tiles(pipe, controlnets, cn_scales, img_upscaled, original_size, prompt, negative, strength, tile_size, shift,steps,scale,interrogate)
+	result = process_tiles(sd, pipe, controlnets, cn_scales, img_upscaled, original_size, prompt, negative, strength, tile_size, shift,steps,scale,interrogate)
 	return result
 
-def process_tiles(pipe, controlnets, cn_scales, img_upscaled, original_size, prompt, negative, strength, tile_size=768, shift=0.333,steps=25,scale=7.5, interrogate=False):
+def process_tiles(sd, pipe, controlnets, cn_scales, img_upscaled, original_size, prompt, negative, strength, tile_size=768, shift=0.333,steps=25,scale=7.5, interrogate=False):
 	zz = 0
 
 	width, height = img_upscaled.size
@@ -164,24 +160,15 @@ def matchc(y,x):
 
 
 def add_border(image, border):
-	# Define the border color
-	color = (0, 0, 0)  # black
-
-	# Create a new image with a border
+	color = (0, 0, 0)
 	new_image = ImageOps.expand(image, border=border, fill=color)
-
 	return new_image
 
 
 def crop_image(image, crop_pixels):
 	width, height = image.size
-
-	# Define the cropping box - left, upper, right, lower
 	crop_box = (crop_pixels, crop_pixels, width - crop_pixels, height - crop_pixels)
-
-	# Create a new image by cropping the original image
 	new_image = image.crop(crop_box)
-
 	return new_image
 
 
@@ -191,10 +178,7 @@ def upscale_image(image_path, upscale_factor=4, padding_size=768):
 	width, height = img.size
 	new_size = (width * upscale_factor, height * upscale_factor)
 	img_upscaled = img.resize(new_size, Image.ANTIALIAS)
-
-
 	img_extended = add_border(img_upscaled, padding_size//3)
-
 	print('img_upscaled.size',img_upscaled.size,'. img_extended.size',img_extended.size)
 
 	return img_extended, (width, height), img_upscaled.size
