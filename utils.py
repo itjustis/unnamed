@@ -30,7 +30,7 @@ def cnet_prepare(controlnets, cnets_p, image_paths, sz):
 			if controlnet == 'depth':
 				image = p_depth(image)
 			elif controlnet == 'tile':
-				image = p_tile(image, sz.size[0])
+				image = p_tile(image, image.size[0])
 			elif controlnet == 'canny_edge':
 				image = p_canny(image)
 			elif controlnet == 'soft_edge':
@@ -145,7 +145,7 @@ def process_tiles(pipe, controlnets, cn_scales, img_upscaled, original_size, pro
 					  ).images[0]
 
 				tile = matchc(tile,itile)
-				time.save('temp_tile.png')
+				tile.save('temp_tile.png')
 				img_upscaled.paste(tile, (left, upper), mask=ImageOps.invert(Image.open('tmask.png')).convert('L'))
 
 
