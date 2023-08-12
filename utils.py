@@ -145,7 +145,7 @@ def process_tiles(pipe, controlnets, cn_scales, img_upscaled, original_size, pro
 					  num_inference_steps=steps,
 					  ).images[0]
 
-				tile = matchc(tile,itile)
+				tile = matchc(itile,tile)
 				tile.save('temp_tile.png')
 				img_upscaled.paste(tile, (left, upper), mask=ImageOps.invert(Image.open('tmask.png')).convert('L'))
 
