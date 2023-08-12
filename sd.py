@@ -164,7 +164,7 @@ class SD:
           
         if len(cnets_loaded)>1:
           self.controlnet.controlnet = MultiControlNetModel(cnets_loaded)
-          self.img2imgcontrolnet.controlnet = self.controlnet
+          self.img2imgcontrolnet.controlnet = self.controlnet.controlnet
           print('ok')
       
       self.cn_loaded = cnets
