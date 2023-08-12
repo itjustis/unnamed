@@ -28,6 +28,7 @@ import tomesd
 
 cnet_dict = {
     'content': 'lllyasviel/control_v11f1e_sd15_tile',
+    'tile': 'lllyasviel/control_v11f1e_sd15_tile',
     'depth': 'lllyasviel/control_v11f1p_sd15_depth',
     'scribble': 'lllyasviel/control_v11p_sd15_scribble',
     'canny_edge': 'lllyasviel/control_v11p_sd15_canny',
