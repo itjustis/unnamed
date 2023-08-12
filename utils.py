@@ -128,15 +128,24 @@ def process_tiles(seed, pipe, controlnets, cn_scales, img_upscaled, original_siz
 				###need to fix
 				tile.save('temp_tile_pre.png')
 				
-				condition_image = Image.open(cnet_prepare(controlnets, [True], ['temp_tile_pre.png'],[tile_size,tile_size])[0])
-				#print(condition_image)
+
+				condition_image = cnet_prepare(controlnets, [True], ['temp_tile_pre.png'],[tile_size,tile_size])
+
+				conditions = condition_image
+
+				if len(condition_image)== 1:
+					condition_image = Image.open(condition_image[0])
+					conditions = condition_image
+				if len(condition_image) > 1:
+					for cond in condition_image:
+						conditions.append(Image.open(cond))
 			
 				itile = tile
 
 				tile = pipe.img2imgcontrolnet(prompt=prompt,
 					  negative_prompt= negative,
 					  image=tile,
-					  controlnet_conditioning_image=condition_image,
+					  controlnet_conditioning_image=conditions,
 					  width=tile.size[0],
 					  height=tile.size[1],
 					  strength=strength,
