@@ -134,9 +134,9 @@ def process_tiles(seed, pipe, controlnets, cn_scales, img_upscaled, original_siz
 				conditions = condition_image
 
 				if len(condition_image)== 1:
-					condition_image = Image.open(condition_image[0])
-					conditions = condition_image
+					conditions = Image.open(condition_image[0])
 				if len(condition_image) > 1:
+					conditions =[]
 					for cond in condition_image:
 						conditions.append(Image.open(cond))
 			
