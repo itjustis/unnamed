@@ -126,8 +126,9 @@ def process_tiles(pipe, controlnets, cn_scales, img_upscaled, original_size, pro
 				#generator=torch.manual_seed(65),
 				
 				###need to fix
+				tile.save('temp_tile_pre.png')
 				
-				condition_image = cnet_prepare(controlnets, tile)
+				condition_image = cnet_prepare(controlnets, [True], ['temp_tile_pre.png'],[tile_size,tile_size])
 			
 				itile = tile
 
@@ -144,6 +145,7 @@ def process_tiles(pipe, controlnets, cn_scales, img_upscaled, original_size, pro
 					  ).images[0]
 
 				tile = matchc(tile,itile)
+				time.save('temp_tile.png')
 				img_upscaled.paste(tile, (left, upper), mask=ImageOps.invert(Image.open('tmask.png')).convert('L'))
 
 
