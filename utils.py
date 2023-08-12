@@ -123,13 +123,12 @@ def process_tiles(seed, pipe, controlnets, cn_scales, img_upscaled, original_siz
 				if interrogate:
 				  prompt=pipe.interrogate(img_upscaled.resize((768,768)),2,4)
 				
-				generator = torch.manual_seed(seed)
+				
 				
 				###need to fix
 				tile.save('temp_tile_pre.png')
-				
 
-				condition_image = cnet_prepare(controlnets, [True], ['temp_tile_pre.png'],[tile_size,tile_size])
+				condition_image = cnet_prepare(controlnets, [True,True], ['temp_tile_pre.png','temp_tile_pre.png'],[tile_size,tile_size])
 
 				conditions = condition_image
 
@@ -141,6 +140,8 @@ def process_tiles(seed, pipe, controlnets, cn_scales, img_upscaled, original_siz
 						conditions.append(Image.open(cond))
 			
 				itile = tile
+
+				generator = torch.manual_seed(seed)
 
 				tile = pipe.img2imgcontrolnet(prompt=prompt,
 					  negative_prompt= negative,
