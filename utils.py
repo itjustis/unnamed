@@ -99,7 +99,7 @@ def tile_upscale(image_path,upr,prompt,negative,pipe,controlnets,cn_scales,tile_
 	result = process_tiles(pipe, controlnets, cn_scales, img_upscaled, original_size, prompt, negative, strength, tile_size, shift,steps,scale,interrogate)
 	return result
 
-def process_tiles(pipe, controlnets, cn_scales, img_upscaled, original_size, prompt, negative, strength, tile_size=768, shift=0.333,steps=25,scale=7.5, interrogate=False):
+def process_tiles(seed, pipe, controlnets, cn_scales, img_upscaled, original_size, prompt, negative, strength, tile_size=768, shift=0.333,steps=25,scale=7.5, interrogate=False):
 	zz = 0
 
 	width, height = img_upscaled.size
@@ -123,7 +123,7 @@ def process_tiles(pipe, controlnets, cn_scales, img_upscaled, original_size, pro
 				if interrogate:
 				  prompt=pipe.interrogate(img_upscaled.resize((768,768)),2,4)
 				
-				#generator=torch.manual_seed(65),
+				generator = torch.manual_seed(seed)
 				
 				###need to fix
 				tile.save('temp_tile_pre.png')
@@ -143,6 +143,7 @@ def process_tiles(pipe, controlnets, cn_scales, img_upscaled, original_size, pro
 					  guidance_scale=scale,
 					  controlnet_conditioning_scale=cn_scales,
 					  num_inference_steps=steps,
+					  generator = generator
 					  ).images[0]
 
 				tile = matchc(itile,tile)
