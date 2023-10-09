@@ -44,7 +44,7 @@ def clear():
 	disp.clear_output()
 def init(models):
 	download_models(models,models_path)
-	sd = SD( models_path, models[0], args.lora_path, None)
+	sd = SD( models_path, models[0], app_args.lora_path, None)
 	return sd
 	
 sd = init(available_models)
