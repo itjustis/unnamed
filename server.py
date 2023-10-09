@@ -17,6 +17,7 @@ import subprocess
 parser = argparse.ArgumentParser(description="Run Flask app with Ngrok")
 parser.add_argument("--token", type=str, help="Use Ngrok auth token")
 parser.add_argument("--models_path", type=str, default='/content/models/', help="Path to models directory")
+parser.add_argument("--lora_path", type=str, default=None, help="Path to lora")
 parser.add_argument("--model", type=str, default='stablediffusionapi/epicrealism', help="diffusers model repo")
 parser.add_argument("--log", action="store_true", help="log mode")
 
@@ -43,7 +44,7 @@ def clear():
 	disp.clear_output()
 def init(models):
 	download_models(models,models_path)
-	sd = SD( models_path, models[0], None)
+	sd = SD( models_path, models[0], args.lora_path, None)
 	return sd
 	
 sd = init(available_models)
